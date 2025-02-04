@@ -31,13 +31,13 @@ export function Header() {
           Home
         </Link>
         <Link
-          to="/about"
+          to="/dashboard"
           activeProps={{
             className: "font-bold",
           }}
           activeOptions={{ exact: true }}
         >
-          About
+          Dashboard
         </Link>
       </div>
 
