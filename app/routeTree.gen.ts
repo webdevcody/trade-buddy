@@ -16,7 +16,8 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
-import { Route as DashboardLayoutImport } from './routes/dashboard/_layout'
+import { Route as DashboardLayoutImport } from ./routes/dashboard/_layout/indexout'
+import { Route as DashboardLayoutIndexImport } from './routes/dashboard/_layout/index'
 import { Route as DashboardLayoutFoodImport } from './routes/dashboard/_layout/food'
 import { Route as DashboardLayoutExerciseImport } from './routes/dashboard/_layout/exercise'
 
@@ -53,6 +54,12 @@ const IndexRoute = IndexImport.update({
 const DashboardLayoutRoute = DashboardLayoutImport.update({
   id: '/_layout',
   getParentRoute: () => DashboardRoute,
+} as any)
+
+const DashboardLayoutIndexRoute = DashboardLayoutIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardLayoutRoute,
 } as any)
 
 const DashboardLayoutFoodRoute = DashboardLayoutFoodImport.update({
@@ -120,6 +127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLayoutFoodImport
       parentRoute: typeof DashboardLayoutImport
     }
+    '/dashboard/_layout/': {
+      id: '/dashboard/_layout/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardLayoutIndexImport
+      parentRoute: typeof DashboardLayoutImport
+    }
   }
 }
 
@@ -128,11 +142,13 @@ declare module '@tanstack/react-router' {
 interface DashboardLayoutRouteChildren {
   DashboardLayoutExerciseRoute: typeof DashboardLayoutExerciseRoute
   DashboardLayoutFoodRoute: typeof DashboardLayoutFoodRoute
+  DashboardLayoutIndexRoute: typeof DashboardLayoutIndexRoute
 }
 
 const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardLayoutExerciseRoute: DashboardLayoutExerciseRoute,
   DashboardLayoutFoodRoute: DashboardLayoutFoodRoute,
+  DashboardLayoutIndexRoute: DashboardLayoutIndexRoute,
 }
 
 const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
@@ -158,13 +174,14 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardLayoutRouteWithChildren
   '/dashboard/exercise': typeof DashboardLayoutExerciseRoute
   '/dashboard/food': typeof DashboardLayoutFoodRoute
+  '/dashboard/': typeof DashboardLayoutIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof DashboardLayoutRouteWithChildren
+  '/dashboard': typeof DashboardLayoutIndexRoute
   '/dashboard/exercise': typeof DashboardLayoutExerciseRoute
   '/dashboard/food': typeof DashboardLayoutFoodRoute
 }
@@ -178,6 +195,7 @@ export interface FileRoutesById {
   '/dashboard/_layout': typeof DashboardLayoutRouteWithChildren
   '/dashboard/_layout/exercise': typeof DashboardLayoutExerciseRoute
   '/dashboard/_layout/food': typeof DashboardLayoutFoodRoute
+  '/dashboard/_layout/': typeof DashboardLayoutIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -189,6 +207,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/exercise'
     | '/dashboard/food'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +225,7 @@ export interface FileRouteTypes {
     | '/dashboard/_layout'
     | '/dashboard/_layout/exercise'
     | '/dashboard/_layout/food'
+    | '/dashboard/_layout/'
   fileRoutesById: FileRoutesById
 }
 
@@ -259,7 +279,8 @@ export const routeTree = rootRoute
       "parent": "/dashboard",
       "children": [
         "/dashboard/_layout/exercise",
-        "/dashboard/_layout/food"
+        "/dashboard/_layout/food",
+        "/dashboard/_layout/"
       ]
     },
     "/dashboard/_layout/exercise": {
@@ -268,6 +289,10 @@ export const routeTree = rootRoute
     },
     "/dashboard/_layout/food": {
       "filePath": "dashboard/_layout/food.tsx",
+      "parent": "/dashboard/_layout"
+    },
+    "/dashboard/_layout/": {
+      "filePath": "dashboard/_layout/index.tsx",
       "parent": "/dashboard/_layout"
     }
   }

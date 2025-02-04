@@ -16,8 +16,6 @@ export function Header() {
     queryFn: () => getUserInfoFn(),
   });
 
-  console.log(userInfo.data.user);
-
   return (
     <div className="container mx-auto flex justify-between items-center text-lg py-4">
       <div className="flex gap-12">

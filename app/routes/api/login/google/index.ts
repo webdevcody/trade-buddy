@@ -15,8 +15,6 @@ export const APIRoute = createAPIFileRoute("/api/login/google")({
       ["profile", "email"]
     );
 
-    const response = Response.redirect(authorizationInfo.href);
-
     setCookie("google_oauth_state", state, {
       path: "/",
       httpOnly: true,
@@ -33,6 +31,6 @@ export const APIRoute = createAPIFileRoute("/api/login/google")({
       maxAge: MAX_COOKIE_AGE_SECONDS,
     });
 
-    return response;
+    return Response.redirect(authorizationInfo.href);
   },
 });

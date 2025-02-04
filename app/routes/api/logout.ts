@@ -1,10 +1,6 @@
 import { createAPIFileRoute } from "@tanstack/start/api";
-import {
-  invalidateSession,
-  invalidateUserSessions,
-  validateRequest,
-} from "~/utils/auth";
-import { assertAuthenticated, deleteSessionTokenCookie } from "~/utils/session";
+import { invalidateSession, validateRequest } from "~/utils/auth";
+import { deleteSessionTokenCookie } from "~/utils/session";
 
 export const APIRoute = createAPIFileRoute("/api/logout")({
   GET: async ({ request, params }) => {
