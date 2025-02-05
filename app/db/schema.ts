@@ -1,5 +1,6 @@
 import {
   index,
+  integer,
   pgTableCreator,
   serial,
   text,
@@ -62,6 +63,19 @@ export const sessions = tableCreator(
   })
 );
 
+export const exercises = tableCreator("exercise", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  exercise: text("exercise").notNull(),
+  weight: integer("weight").notNull(),
+  reps: integer("reps").notNull(),
+  sets: integer("sets").notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type Exercise = typeof exercises.$inferSelect;
+export type ExerciseCreate = typeof exercises.$inferInsert;

@@ -1,0 +1,1 @@
+ALTER TABLE "app_exercise" DROP CONSTRAINT "app_exercise_userId_unique";
