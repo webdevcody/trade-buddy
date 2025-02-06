@@ -1,9 +1,9 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { Dumbbell, Home, Utensils } from "lucide-react";
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { Dumbbell, Home, Utensils } from 'lucide-react'
 
-export const Route = createFileRoute("/dashboard/_layout")({
+export const Route = createFileRoute('/dashboard')({
   component: RouteComponent,
-});
+})
 
 function SideNavigation() {
   return (
@@ -13,7 +13,7 @@ function SideNavigation() {
           to="/dashboard"
           className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent"
           activeProps={{
-            className: "flex items-center gap-2 rounded-lg px-3 py-2 bg-accent",
+            className: 'flex items-center gap-2 rounded-lg px-3 py-2 bg-accent',
           }}
           activeOptions={{ exact: true }}
         >
@@ -24,7 +24,7 @@ function SideNavigation() {
           to="/dashboard/food"
           className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent"
           activeProps={{
-            className: "flex items-center gap-2 rounded-lg px-3 py-2 bg-accent",
+            className: 'flex items-center gap-2 rounded-lg px-3 py-2 bg-accent',
           }}
         >
           <Utensils className="h-4 w-4" />
@@ -34,7 +34,7 @@ function SideNavigation() {
           to="/dashboard/exercise"
           className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent"
           activeProps={{
-            className: "flex items-center gap-2 rounded-lg px-3 py-2 bg-accent",
+            className: 'flex items-center gap-2 rounded-lg px-3 py-2 bg-accent',
           }}
         >
           <Dumbbell className="h-4 w-4" />
@@ -42,7 +42,7 @@ function SideNavigation() {
         </Link>
       </nav>
     </div>
-  );
+  )
 }
 
 function RouteComponent() {
@@ -51,5 +51,5 @@ function RouteComponent() {
       <SideNavigation />
       <Outlet />
     </div>
-  );
+  )
 }
