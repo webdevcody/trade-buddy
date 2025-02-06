@@ -16,7 +16,7 @@ import { Button } from '~/components/ui/button'
 import { createServerFn } from '@tanstack/start'
 import { createExerciseUseCase } from '~/use-cases/exercises'
 
-export const Route = createFileRoute('/dashboard/exercise-add')({
+export const Route = createFileRoute('/dashboard/exercise/add')({
   component: RouteComponent,
 })
 

@@ -17,8 +17,8 @@ import { Route as DashboardRouteImport } from './routes/dashboard/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as DashboardIndexImport } from './routes/dashboard/index'
 import { Route as DashboardFoodImport } from './routes/dashboard/food'
-import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise-add'
-import { Route as DashboardExerciseImport } from './routes/dashboard/exercise'
+import { Route as DashboardExerciseIndexImport } from './routes/dashboard/exercise.index'
+import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise.add'
 
 // Create/Update Routes
 
@@ -58,15 +58,15 @@ const DashboardFoodRoute = DashboardFoodImport.update({
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 
-const DashboardExerciseAddRoute = DashboardExerciseAddImport.update({
-  id: '/exercise-add',
-  path: '/exercise-add',
+const DashboardExerciseIndexRoute = DashboardExerciseIndexImport.update({
+  id: '/exercise/',
+  path: '/exercise/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 
-const DashboardExerciseRoute = DashboardExerciseImport.update({
-  id: '/exercise',
-  path: '/exercise',
+const DashboardExerciseAddRoute = DashboardExerciseAddImport.update({
+  id: '/exercise/add',
+  path: '/exercise/add',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 
@@ -102,20 +102,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/dashboard/exercise': {
-      id: '/dashboard/exercise'
-      path: '/exercise'
-      fullPath: '/dashboard/exercise'
-      preLoaderRoute: typeof DashboardExerciseImport
-      parentRoute: typeof DashboardRouteImport
-    }
-    '/dashboard/exercise-add': {
-      id: '/dashboard/exercise-add'
-      path: '/exercise-add'
-      fullPath: '/dashboard/exercise-add'
-      preLoaderRoute: typeof DashboardExerciseAddImport
-      parentRoute: typeof DashboardRouteImport
-    }
     '/dashboard/food': {
       id: '/dashboard/food'
       path: '/food'
@@ -130,23 +116,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexImport
       parentRoute: typeof DashboardRouteImport
     }
+    '/dashboard/exercise/add': {
+      id: '/dashboard/exercise/add'
+      path: '/exercise/add'
+      fullPath: '/dashboard/exercise/add'
+      preLoaderRoute: typeof DashboardExerciseAddImport
+      parentRoute: typeof DashboardRouteImport
+    }
+    '/dashboard/exercise/': {
+      id: '/dashboard/exercise/'
+      path: '/exercise'
+      fullPath: '/dashboard/exercise'
+      preLoaderRoute: typeof DashboardExerciseIndexImport
+      parentRoute: typeof DashboardRouteImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface DashboardRouteRouteChildren {
-  DashboardExerciseRoute: typeof DashboardExerciseRoute
-  DashboardExerciseAddRoute: typeof DashboardExerciseAddRoute
   DashboardFoodRoute: typeof DashboardFoodRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardExerciseAddRoute: typeof DashboardExerciseAddRoute
+  DashboardExerciseIndexRoute: typeof DashboardExerciseIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardExerciseRoute: DashboardExerciseRoute,
-  DashboardExerciseAddRoute: DashboardExerciseAddRoute,
   DashboardFoodRoute: DashboardFoodRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardExerciseAddRoute: DashboardExerciseAddRoute,
+  DashboardExerciseIndexRoute: DashboardExerciseIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
@@ -158,20 +158,20 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/dashboard/exercise': typeof DashboardExerciseRoute
-  '/dashboard/exercise-add': typeof DashboardExerciseAddRoute
   '/dashboard/food': typeof DashboardFoodRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
+  '/dashboard/exercise': typeof DashboardExerciseIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/dashboard/exercise': typeof DashboardExerciseRoute
-  '/dashboard/exercise-add': typeof DashboardExerciseAddRoute
   '/dashboard/food': typeof DashboardFoodRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
+  '/dashboard/exercise': typeof DashboardExerciseIndexRoute
 }
 
 export interface FileRoutesById {
@@ -180,10 +180,10 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/dashboard/exercise': typeof DashboardExerciseRoute
-  '/dashboard/exercise-add': typeof DashboardExerciseAddRoute
   '/dashboard/food': typeof DashboardFoodRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
+  '/dashboard/exercise/': typeof DashboardExerciseIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -193,29 +193,29 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/about'
     | '/login'
-    | '/dashboard/exercise'
-    | '/dashboard/exercise-add'
     | '/dashboard/food'
     | '/dashboard/'
+    | '/dashboard/exercise/add'
+    | '/dashboard/exercise'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/login'
-    | '/dashboard/exercise'
-    | '/dashboard/exercise-add'
     | '/dashboard/food'
     | '/dashboard'
+    | '/dashboard/exercise/add'
+    | '/dashboard/exercise'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/about'
     | '/login'
-    | '/dashboard/exercise'
-    | '/dashboard/exercise-add'
     | '/dashboard/food'
     | '/dashboard/'
+    | '/dashboard/exercise/add'
+    | '/dashboard/exercise/'
   fileRoutesById: FileRoutesById
 }
 
@@ -255,10 +255,10 @@ export const routeTree = rootRoute
     "/dashboard": {
       "filePath": "dashboard/route.tsx",
       "children": [
-        "/dashboard/exercise",
-        "/dashboard/exercise-add",
         "/dashboard/food",
-        "/dashboard/"
+        "/dashboard/",
+        "/dashboard/exercise/add",
+        "/dashboard/exercise/"
       ]
     },
     "/about": {
@@ -267,20 +267,20 @@ export const routeTree = rootRoute
     "/login": {
       "filePath": "login.tsx"
     },
-    "/dashboard/exercise": {
-      "filePath": "dashboard/exercise.tsx",
-      "parent": "/dashboard"
-    },
-    "/dashboard/exercise-add": {
-      "filePath": "dashboard/exercise-add.tsx",
-      "parent": "/dashboard"
-    },
     "/dashboard/food": {
       "filePath": "dashboard/food.tsx",
       "parent": "/dashboard"
     },
     "/dashboard/": {
       "filePath": "dashboard/index.tsx",
+      "parent": "/dashboard"
+    },
+    "/dashboard/exercise/add": {
+      "filePath": "dashboard/exercise.add.tsx",
+      "parent": "/dashboard"
+    },
+    "/dashboard/exercise/": {
+      "filePath": "dashboard/exercise.index.tsx",
       "parent": "/dashboard"
     }
   }
