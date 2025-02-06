@@ -1,29 +1,23 @@
+import { createServerFn } from "@tanstack/start";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
 import { getExercisesUseCase } from "~/use-cases/exercises";
-import { createServerFn } from "@tanstack/start";
-import { useSuspenseQuery } from "@tanstack/react-query";
-
-export const Route = createFileRoute("/dashboard/exercise/")({
-	component: RouteComponent,
-	// TODO: figure out why this loader crashes with a Buffer error
-	// loader: async () => {
-	//   const exercises = await getExercisesUseCase();
-	//   return { exercises };
-	// },
-});
 
 const getExercisesFn = createServerFn().handler(async () => {
 	const exercises = await getExercisesUseCase();
 	return exercises;
 });
 
+export const Route = createFileRoute("/dashboard/exercise/")({
+	component: RouteComponent,
+	loader: async () => {
+		const exercises = await getExercisesFn();
+		return { exercises };
+	},
+});
+
 function RouteComponent() {
-	// const { exercises } = Route.useLoaderData();
-	const { data: exercises } = useSuspenseQuery({
-		queryKey: ["exercises"],
-		queryFn: () => getExercisesFn(),
-	});
+	const { exercises } = Route.useLoaderData();
 
 	return (
 		<div className='flex-grow'>
