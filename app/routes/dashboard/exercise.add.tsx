@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -10,47 +10,53 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '~/components/ui/form'
-import { Input } from '~/components/ui/input'
-import { Button } from '~/components/ui/button'
-import { createServerFn } from '@tanstack/start'
-import { createExerciseUseCase } from '~/use-cases/exercises'
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { createServerFn } from "@tanstack/start";
+import { createExerciseUseCase } from "~/use-cases/exercises";
+import { validateRequest } from "~/utils/auth";
 
-export const Route = createFileRoute('/dashboard/exercise/add')({
+export const Route = createFileRoute("/dashboard/exercise/add")({
   component: RouteComponent,
-})
+});
 
 const formSchema = z.object({
   exercise: z.string().min(2).max(50),
   weight: z.coerce.number().min(1).max(500),
   reps: z.coerce.number().min(1).max(50),
   sets: z.coerce.number().min(1).max(10),
-})
+});
 
-const createExerciseFn = createServerFn({ method: 'POST' })
+const createExerciseFn = createServerFn()
   .validator(formSchema)
   .handler(async ({ data }) => {
-    console.log({ data })
-    await createExerciseUseCase(data)
-  })
+    const { user } = await validateRequest();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await createExerciseUseCase({ userId: user.id }, data);
+  });
 
 function RouteComponent() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      exercise: '',
+      exercise: "",
       weight: 0,
       reps: 0,
       sets: 0,
     },
-  })
+  });
 
-  const router = useNavigate()
+  const router = useNavigate();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     createExerciseFn({ data: values }).then(() => {
-      router({ to: '/dashboard/exercise' })
-    })
+      router({ to: "/dashboard/exercise" });
+    });
   }
 
   return (
@@ -119,5 +125,5 @@ function RouteComponent() {
         </form>
       </Form>
     </div>
-  )
+  );
 }
