@@ -8,31 +8,19 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
 import { Route as AboutImport } from './routes/about'
+import { Route as DashboardRouteImport } from './routes/dashboard/route'
 import { Route as IndexImport } from './routes/index'
-import { Route as DashboardLayoutImport } from './routes/dashboard/_layout'
-import { Route as DashboardLayoutIndexImport } from './routes/dashboard/_layout/index'
-import { Route as DashboardLayoutFoodImport } from './routes/dashboard/_layout/food'
-import { Route as DashboardLayoutExerciseAddImport } from './routes/dashboard/_layout/exercise-add'
-import { Route as DashboardLayoutExerciseImport } from './routes/dashboard/_layout/exercise'
-
-// Create Virtual Routes
-
-const DashboardImport = createFileRoute('/dashboard')()
+import { Route as DashboardIndexImport } from './routes/dashboard/index'
+import { Route as DashboardFoodImport } from './routes/dashboard/food'
+import { Route as DashboardExerciseIndexImport } from './routes/dashboard/exercise.index'
+import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise.add'
 
 // Create/Update Routes
-
-const DashboardRoute = DashboardImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const LoginRoute = LoginImport.update({
   id: '/login',
@@ -46,41 +34,40 @@ const AboutRoute = AboutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const DashboardRouteRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const DashboardLayoutRoute = DashboardLayoutImport.update({
-  id: '/_layout',
-  getParentRoute: () => DashboardRoute,
-} as any)
-
-const DashboardLayoutIndexRoute = DashboardLayoutIndexImport.update({
+const DashboardIndexRoute = DashboardIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardLayoutRoute,
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 
-const DashboardLayoutFoodRoute = DashboardLayoutFoodImport.update({
+const DashboardFoodRoute = DashboardFoodImport.update({
   id: '/food',
   path: '/food',
-  getParentRoute: () => DashboardLayoutRoute,
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 
-const DashboardLayoutExerciseAddRoute = DashboardLayoutExerciseAddImport.update(
-  {
-    id: '/exercise-add',
-    path: '/exercise-add',
-    getParentRoute: () => DashboardLayoutRoute,
-  } as any,
-)
+const DashboardExerciseIndexRoute = DashboardExerciseIndexImport.update({
+  id: '/exercise/',
+  path: '/exercise/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 
-const DashboardLayoutExerciseRoute = DashboardLayoutExerciseImport.update({
-  id: '/exercise',
-  path: '/exercise',
-  getParentRoute: () => DashboardLayoutRoute,
+const DashboardExerciseAddRoute = DashboardExerciseAddImport.update({
+  id: '/exercise/add',
+  path: '/exercise/add',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -92,6 +79,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRoute
     }
     '/about': {
@@ -108,163 +102,135 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardImport
-      parentRoute: typeof rootRoute
-    }
-    '/dashboard/_layout': {
-      id: '/dashboard/_layout'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardLayoutImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/_layout/exercise': {
-      id: '/dashboard/_layout/exercise'
-      path: '/exercise'
-      fullPath: '/dashboard/exercise'
-      preLoaderRoute: typeof DashboardLayoutExerciseImport
-      parentRoute: typeof DashboardLayoutImport
-    }
-    '/dashboard/_layout/exercise-add': {
-      id: '/dashboard/_layout/exercise-add'
-      path: '/exercise-add'
-      fullPath: '/dashboard/exercise-add'
-      preLoaderRoute: typeof DashboardLayoutExerciseAddImport
-      parentRoute: typeof DashboardLayoutImport
-    }
-    '/dashboard/_layout/food': {
-      id: '/dashboard/_layout/food'
+    '/dashboard/food': {
+      id: '/dashboard/food'
       path: '/food'
       fullPath: '/dashboard/food'
-      preLoaderRoute: typeof DashboardLayoutFoodImport
-      parentRoute: typeof DashboardLayoutImport
+      preLoaderRoute: typeof DashboardFoodImport
+      parentRoute: typeof DashboardRouteImport
     }
-    '/dashboard/_layout/': {
-      id: '/dashboard/_layout/'
+    '/dashboard/': {
+      id: '/dashboard/'
       path: '/'
       fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardLayoutIndexImport
-      parentRoute: typeof DashboardLayoutImport
+      preLoaderRoute: typeof DashboardIndexImport
+      parentRoute: typeof DashboardRouteImport
+    }
+    '/dashboard/exercise/add': {
+      id: '/dashboard/exercise/add'
+      path: '/exercise/add'
+      fullPath: '/dashboard/exercise/add'
+      preLoaderRoute: typeof DashboardExerciseAddImport
+      parentRoute: typeof DashboardRouteImport
+    }
+    '/dashboard/exercise/': {
+      id: '/dashboard/exercise/'
+      path: '/exercise'
+      fullPath: '/dashboard/exercise'
+      preLoaderRoute: typeof DashboardExerciseIndexImport
+      parentRoute: typeof DashboardRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface DashboardLayoutRouteChildren {
-  DashboardLayoutExerciseRoute: typeof DashboardLayoutExerciseRoute
-  DashboardLayoutExerciseAddRoute: typeof DashboardLayoutExerciseAddRoute
-  DashboardLayoutFoodRoute: typeof DashboardLayoutFoodRoute
-  DashboardLayoutIndexRoute: typeof DashboardLayoutIndexRoute
+interface DashboardRouteRouteChildren {
+  DashboardFoodRoute: typeof DashboardFoodRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardExerciseAddRoute: typeof DashboardExerciseAddRoute
+  DashboardExerciseIndexRoute: typeof DashboardExerciseIndexRoute
 }
 
-const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
-  DashboardLayoutExerciseRoute: DashboardLayoutExerciseRoute,
-  DashboardLayoutExerciseAddRoute: DashboardLayoutExerciseAddRoute,
-  DashboardLayoutFoodRoute: DashboardLayoutFoodRoute,
-  DashboardLayoutIndexRoute: DashboardLayoutIndexRoute,
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardFoodRoute: DashboardFoodRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardExerciseAddRoute: DashboardExerciseAddRoute,
+  DashboardExerciseIndexRoute: DashboardExerciseIndexRoute,
 }
 
-const DashboardLayoutRouteWithChildren = DashboardLayoutRoute._addFileChildren(
-  DashboardLayoutRouteChildren,
-)
-
-interface DashboardRouteChildren {
-  DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren
-}
-
-const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardLayoutRoute: DashboardLayoutRouteWithChildren,
-}
-
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
 )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof DashboardLayoutRouteWithChildren
-  '/dashboard/exercise': typeof DashboardLayoutExerciseRoute
-  '/dashboard/exercise-add': typeof DashboardLayoutExerciseAddRoute
-  '/dashboard/food': typeof DashboardLayoutFoodRoute
-  '/dashboard/': typeof DashboardLayoutIndexRoute
+  '/dashboard/food': typeof DashboardFoodRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
+  '/dashboard/exercise': typeof DashboardExerciseIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof DashboardLayoutIndexRoute
-  '/dashboard/exercise': typeof DashboardLayoutExerciseRoute
-  '/dashboard/exercise-add': typeof DashboardLayoutExerciseAddRoute
-  '/dashboard/food': typeof DashboardLayoutFoodRoute
+  '/dashboard/food': typeof DashboardFoodRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
+  '/dashboard/exercise': typeof DashboardExerciseIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/_layout': typeof DashboardLayoutRouteWithChildren
-  '/dashboard/_layout/exercise': typeof DashboardLayoutExerciseRoute
-  '/dashboard/_layout/exercise-add': typeof DashboardLayoutExerciseAddRoute
-  '/dashboard/_layout/food': typeof DashboardLayoutFoodRoute
-  '/dashboard/_layout/': typeof DashboardLayoutIndexRoute
+  '/dashboard/food': typeof DashboardFoodRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
+  '/dashboard/exercise/': typeof DashboardExerciseIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/about'
     | '/login'
-    | '/dashboard'
-    | '/dashboard/exercise'
-    | '/dashboard/exercise-add'
     | '/dashboard/food'
     | '/dashboard/'
+    | '/dashboard/exercise/add'
+    | '/dashboard/exercise'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/login'
-    | '/dashboard'
-    | '/dashboard/exercise'
-    | '/dashboard/exercise-add'
     | '/dashboard/food'
+    | '/dashboard'
+    | '/dashboard/exercise/add'
+    | '/dashboard/exercise'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/about'
     | '/login'
-    | '/dashboard'
-    | '/dashboard/_layout'
-    | '/dashboard/_layout/exercise'
-    | '/dashboard/_layout/exercise-add'
-    | '/dashboard/_layout/food'
-    | '/dashboard/_layout/'
+    | '/dashboard/food'
+    | '/dashboard/'
+    | '/dashboard/exercise/add'
+    | '/dashboard/exercise/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   LoginRoute: typeof LoginRoute
-  DashboardRoute: typeof DashboardRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   LoginRoute: LoginRoute,
-  DashboardRoute: DashboardRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -278,13 +244,22 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/dashboard",
         "/about",
-        "/login",
-        "/dashboard"
+        "/login"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/dashboard": {
+      "filePath": "dashboard/route.tsx",
+      "children": [
+        "/dashboard/food",
+        "/dashboard/",
+        "/dashboard/exercise/add",
+        "/dashboard/exercise/"
+      ]
     },
     "/about": {
       "filePath": "about.tsx"
@@ -292,37 +267,21 @@ export const routeTree = rootRoute
     "/login": {
       "filePath": "login.tsx"
     },
-    "/dashboard": {
-      "filePath": "dashboard",
-      "children": [
-        "/dashboard/_layout"
-      ]
+    "/dashboard/food": {
+      "filePath": "dashboard/food.tsx",
+      "parent": "/dashboard"
     },
-    "/dashboard/_layout": {
-      "filePath": "dashboard/_layout.tsx",
-      "parent": "/dashboard",
-      "children": [
-        "/dashboard/_layout/exercise",
-        "/dashboard/_layout/exercise-add",
-        "/dashboard/_layout/food",
-        "/dashboard/_layout/"
-      ]
+    "/dashboard/": {
+      "filePath": "dashboard/index.tsx",
+      "parent": "/dashboard"
     },
-    "/dashboard/_layout/exercise": {
-      "filePath": "dashboard/_layout/exercise.tsx",
-      "parent": "/dashboard/_layout"
+    "/dashboard/exercise/add": {
+      "filePath": "dashboard/exercise.add.tsx",
+      "parent": "/dashboard"
     },
-    "/dashboard/_layout/exercise-add": {
-      "filePath": "dashboard/_layout/exercise-add.tsx",
-      "parent": "/dashboard/_layout"
-    },
-    "/dashboard/_layout/food": {
-      "filePath": "dashboard/_layout/food.tsx",
-      "parent": "/dashboard/_layout"
-    },
-    "/dashboard/_layout/": {
-      "filePath": "dashboard/_layout/index.tsx",
-      "parent": "/dashboard/_layout"
+    "/dashboard/exercise/": {
+      "filePath": "dashboard/exercise.index.tsx",
+      "parent": "/dashboard"
     }
   }
 }
