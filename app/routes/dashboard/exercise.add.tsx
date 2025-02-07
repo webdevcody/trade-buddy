@@ -16,6 +16,7 @@ import { Button } from "~/components/ui/button";
 import { createServerFn } from "@tanstack/start";
 import { createExerciseUseCase } from "~/use-cases/exercises";
 import { validateRequest } from "~/utils/auth";
+import { authenticatedMiddleware } from "~/lib/auth";
 
 export const Route = createFileRoute("/dashboard/exercise/add")({
   component: RouteComponent,
@@ -29,15 +30,10 @@ const formSchema = z.object({
 });
 
 const createExerciseFn = createServerFn()
+  .middleware([authenticatedMiddleware])
   .validator(formSchema)
-  .handler(async ({ data }) => {
-    const { user } = await validateRequest();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    await createExerciseUseCase({ userId: user.id }, data);
+  .handler(async ({ data, context }) => {
+    await createExerciseUseCase(context.userId, data);
   });
 
 function RouteComponent() {

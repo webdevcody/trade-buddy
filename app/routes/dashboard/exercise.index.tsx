@@ -18,24 +18,11 @@ import { TrashIcon } from "lucide-react";
 import { z } from "zod";
 import { validateRequest } from "~/utils/auth";
 import { createMiddleware } from "@tanstack/start";
+import { authenticatedMiddleware } from "~/lib/auth";
 
 const getExercisesFn = createServerFn().handler(async () => {
   const exercises = await getExercisesUseCase();
   return exercises;
-});
-
-const authenticatedMiddleware = createMiddleware().server(async ({ next }) => {
-  const { user } = await validateRequest();
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  return next({
-    context: {
-      userId: user.id,
-    },
-  });
 });
 
 const deleteExerciseFn = createServerFn()
@@ -68,10 +55,9 @@ function ExerciseCard({ exercise }: { exercise: Exercise }) {
           <Button
             size="icon"
             variant="destructive"
-            onClick={() => {
-              deleteExerciseFn({ data: { exerciseId: exercise.id } }).then(() =>
-                router.invalidate()
-              );
+            onClick={async () => {
+              await deleteExerciseFn({ data: { exerciseId: exercise.id } });
+              router.invalidate();
             }}
           >
             <TrashIcon />

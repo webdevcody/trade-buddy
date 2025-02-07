@@ -6,15 +6,11 @@ import {
 } from "../data-access/exercises";
 import { Exercise, User, type ExerciseCreate } from "../db/schema";
 
-type UseCaseContext = {
-  userId: number;
-};
-
 export function createExerciseUseCase(
-  context: UseCaseContext,
+  userId: User["id"],
   exercise: ExerciseCreate
 ) {
-  return createExercise({ ...exercise, userId: context.userId });
+  return createExercise({ ...exercise, userId });
 }
 
 export function getExercisesUseCase() {
