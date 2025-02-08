@@ -37,6 +37,16 @@ export function Header() {
         >
           Dashboard
         </Link>
+
+        <Link
+          to="/courses"
+          activeProps={{
+            className: "font-bold",
+          }}
+          activeOptions={{ exact: true }}
+        >
+          Courses
+        </Link>
       </div>
 
       <div className="flex gap-4">

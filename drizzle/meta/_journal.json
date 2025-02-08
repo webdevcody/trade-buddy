@@ -22,6 +22,13 @@
       "when": 1738735655329,
       "tag": "0002_solid_metal_master",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1738984749685,
+      "tag": "0003_woozy_black_crow",
+      "breakpoints": true
     }
   ]
 }

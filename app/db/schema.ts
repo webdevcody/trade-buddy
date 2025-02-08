@@ -74,8 +74,19 @@ export const exercises = tableCreator("exercise", {
   sets: integer("sets").notNull(),
 });
 
+export const courses = tableCreator("course", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  category: text("category").notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Exercise = typeof exercises.$inferSelect;
 export type ExerciseCreate = typeof exercises.$inferInsert;
+export type Course = typeof courses.$inferSelect;
+export type CourseCreate = typeof courses.$inferInsert;
