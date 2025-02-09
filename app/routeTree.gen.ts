@@ -20,7 +20,7 @@ import { Route as CoursesIndexImport } from './routes/courses/index'
 import { Route as DashboardFoodImport } from './routes/dashboard/food'
 import { Route as CoursesAddImport } from './routes/courses/add'
 import { Route as DashboardExerciseIndexImport } from './routes/dashboard/exercise.index'
-import { Route as CoursesCourseIdIndexImport } from './routes/courses/$courseId.index'
+import { Route as CoursesCourseIdIndexImport } from './routes/courses/$courseId/index'
 import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise.add'
 
 // Create/Update Routes
@@ -355,7 +355,7 @@ export const routeTree = rootRoute
       "parent": "/dashboard"
     },
     "/courses/$courseId/": {
-      "filePath": "courses/$courseId.index.tsx"
+      "filePath": "courses/$courseId/index.tsx"
     },
     "/dashboard/exercise/": {
       "filePath": "dashboard/exercise.index.tsx",
