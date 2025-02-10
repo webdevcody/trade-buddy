@@ -2,8 +2,8 @@ import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface NavigationProps {
-  prevSegment: { id: string; title: string } | null;
-  nextSegment: { id: string; title: string } | null;
+  prevSegment: { id: string; title: string; courseId: string } | null;
+  nextSegment: { id: string; title: string; courseId: string } | null;
 }
 
 export function Navigation({ prevSegment, nextSegment }: NavigationProps) {
@@ -11,7 +11,9 @@ export function Navigation({ prevSegment, nextSegment }: NavigationProps) {
     <div className="flex justify-between mt-6">
       {prevSegment ? (
         <Button variant="outline" asChild>
-          <a href={`/courses/${prevSegment.id}/segments/${prevSegment.id}`}>
+          <a
+            href={`/courses/${prevSegment.courseId}/segments/${prevSegment.id}`}
+          >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Previous: {prevSegment.title}
           </a>
@@ -21,7 +23,9 @@ export function Navigation({ prevSegment, nextSegment }: NavigationProps) {
       )}
       {nextSegment && (
         <Button asChild>
-          <a href={`/courses/${nextSegment.id}/segments/${nextSegment.id}`}>
+          <a
+            href={`/courses/${nextSegment.courseId}/segments/${nextSegment.id}`}
+          >
             Next: {nextSegment.title}
             <ChevronRight className="ml-2 h-4 w-4" />
           </a>

@@ -13,6 +13,7 @@ import { DesktopNavigation } from "./-components/desktop-navigation";
 import { MobileNavigation } from "./-components/mobile-navigation";
 import React from "react";
 import { getSegmentsUseCase } from "~/use-cases/segments";
+import { NotFound } from "~/components/NotFound";
 
 const getCourseFn = createServerFn()
   .validator(
@@ -99,8 +100,8 @@ function CourseContent({
 
         <main className="w-full p-6">
           <div className="space-y-8">
-            <h1 className="text-2xl font-bold">{course.title}</h1>
-            <div className="w-full aspect-video">
+            <h1 className="text-2xl font-bold">{currentSegment.title}</h1>
+            <div className="w-full">
               <VideoPlayer url={currentSegment.videoUrl} />
             </div>
             <MarkdownContent content={currentSegment.content} />
@@ -116,8 +117,15 @@ function CourseContent({
 function RouteComponent() {
   const { course, segments } = Route.useLoaderData();
 
-  const currentSegment = segments[0];
-  const currentSegmentId = currentSegment.id;
+  const currentSegment = segments.find(
+    (segment) => segment.id === Route.useParams().segmentId
+  );
+
+  const currentSegmentId = currentSegment?.id;
+
+  if (!currentSegmentId) {
+    return <NotFound />;
+  }
 
   return (
     <SidebarProvider>

@@ -37,6 +37,7 @@ const segments: Segment[] = Array.from({ length: 20 }, (_, i) => {
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     content: `This is the content for ${titles[i]}`,
     assignments: ["Assignment 1", "Assignment 2"],
+    courseId: "1",
   };
 });
 
