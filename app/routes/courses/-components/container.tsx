@@ -1,3 +1,7 @@
 export function Container({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-col gap-8">{children}</div>;
+  return (
+    <div className="pt-12 mx-auto container flex flex-col gap-8 pb-16">
+      {children}
+    </div>
+  );
 }

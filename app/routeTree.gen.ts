@@ -22,6 +22,7 @@ import { Route as CoursesAddImport } from './routes/courses/add'
 import { Route as DashboardExerciseIndexImport } from './routes/dashboard/exercise.index'
 import { Route as CoursesCourseIdIndexImport } from './routes/courses/$courseId/index'
 import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise.add'
+import { Route as CoursesCourseIdSegmentsSegmentIdImport } from './routes/courses/$courseId/segments.$segmentId'
 
 // Create/Update Routes
 
@@ -90,6 +91,13 @@ const DashboardExerciseAddRoute = DashboardExerciseAddImport.update({
   path: '/exercise/add',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+
+const CoursesCourseIdSegmentsSegmentIdRoute =
+  CoursesCourseIdSegmentsSegmentIdImport.update({
+    id: '/courses/$courseId/segments/$segmentId',
+    path: '/courses/$courseId/segments/$segmentId',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -172,6 +180,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardExerciseIndexImport
       parentRoute: typeof DashboardRouteImport
     }
+    '/courses/$courseId/segments/$segmentId': {
+      id: '/courses/$courseId/segments/$segmentId'
+      path: '/courses/$courseId/segments/$segmentId'
+      fullPath: '/courses/$courseId/segments/$segmentId'
+      preLoaderRoute: typeof CoursesCourseIdSegmentsSegmentIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -207,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
+  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -220,6 +236,7 @@ export interface FileRoutesByTo {
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
+  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
 }
 
 export interface FileRoutesById {
@@ -235,6 +252,7 @@ export interface FileRoutesById {
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise/': typeof DashboardExerciseIndexRoute
+  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
 }
 
 export interface FileRouteTypes {
@@ -251,6 +269,7 @@ export interface FileRouteTypes {
     | '/dashboard/exercise/add'
     | '/courses/$courseId'
     | '/dashboard/exercise'
+    | '/courses/$courseId/segments/$segmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -263,6 +282,7 @@ export interface FileRouteTypes {
     | '/dashboard/exercise/add'
     | '/courses/$courseId'
     | '/dashboard/exercise'
+    | '/courses/$courseId/segments/$segmentId'
   id:
     | '__root__'
     | '/'
@@ -276,6 +296,7 @@ export interface FileRouteTypes {
     | '/dashboard/exercise/add'
     | '/courses/$courseId/'
     | '/dashboard/exercise/'
+    | '/courses/$courseId/segments/$segmentId'
   fileRoutesById: FileRoutesById
 }
 
@@ -287,6 +308,7 @@ export interface RootRouteChildren {
   CoursesAddRoute: typeof CoursesAddRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
   CoursesCourseIdIndexRoute: typeof CoursesCourseIdIndexRoute
+  CoursesCourseIdSegmentsSegmentIdRoute: typeof CoursesCourseIdSegmentsSegmentIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -297,6 +319,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesAddRoute: CoursesAddRoute,
   CoursesIndexRoute: CoursesIndexRoute,
   CoursesCourseIdIndexRoute: CoursesCourseIdIndexRoute,
+  CoursesCourseIdSegmentsSegmentIdRoute: CoursesCourseIdSegmentsSegmentIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -315,7 +338,8 @@ export const routeTree = rootRoute
         "/login",
         "/courses/add",
         "/courses/",
-        "/courses/$courseId/"
+        "/courses/$courseId/",
+        "/courses/$courseId/segments/$segmentId"
       ]
     },
     "/": {
@@ -360,6 +384,9 @@ export const routeTree = rootRoute
     "/dashboard/exercise/": {
       "filePath": "dashboard/exercise.index.tsx",
       "parent": "/dashboard"
+    },
+    "/courses/$courseId/segments/$segmentId": {
+      "filePath": "courses/$courseId/segments.$segmentId.tsx"
     }
   }
 }

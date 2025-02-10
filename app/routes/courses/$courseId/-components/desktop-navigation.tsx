@@ -8,6 +8,7 @@ import {
   Sidebar,
   SidebarContent,
 } from "~/components/ui/sidebar";
+import { Course } from "~/db/schema";
 
 interface Segment {
   id: string;
@@ -16,11 +17,13 @@ interface Segment {
 
 interface DesktopNavigationProps {
   segments: Segment[];
-  currentSegmentId: string;
+  courseId: Course["id"];
+  currentSegmentId: Segment["id"];
 }
 
 export function DesktopNavigation({
   segments,
+  courseId,
   currentSegmentId,
 }: DesktopNavigationProps) {
   return (
@@ -41,7 +44,7 @@ export function DesktopNavigation({
                       className="rounded-md transition-colors w-full py-2 px-2 hover:bg-accent text-sm"
                     >
                       <a
-                        href={`/course/${segment.id}`}
+                        href={`/courses/${courseId}/segments/${segment.id}`}
                         className="flex items-center gap-2 w-full"
                       >
                         <span className="flex-shrink-0 size-5 flex items-center justify-center rounded-full bg-muted font-medium text-xs">
