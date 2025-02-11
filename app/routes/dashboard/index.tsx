@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { authenticatedMiddleware } from "~/lib/auth";
 import { getSegmentsUseCase } from "~/use-cases/segments";
@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { ChevronRight, GraduationCap } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { getBookMarkedCoursesUseCase } from "~/use-cases/bookmarks";
+import { assertAuthenticatedFn, isAuthenticatedFn } from "~/fn/auth";
 
 const getEnrolledCoursesFn = createServerFn()
   .middleware([authenticatedMiddleware])
@@ -27,6 +28,7 @@ const getEnrolledCoursesFn = createServerFn()
 export const Route = createFileRoute("/dashboard/")({
   component: RouteComponent,
   loader: async () => {
+    await assertAuthenticatedFn();
     const courses = await getEnrolledCoursesFn();
     return { courses };
   },

@@ -49,6 +49,24 @@ export async function validateRequest(): Promise<SessionValidationResult> {
   return validateSessionToken(sessionToken);
 }
 
+export async function getAuthenticatedUser(): Promise<User | null> {
+  const sessionToken = await getSessionToken();
+  if (!sessionToken) {
+    return null;
+  }
+  const { user } = await validateSessionToken(sessionToken);
+  return user;
+}
+
+export async function isAuthenticated(): Promise<boolean> {
+  const sessionToken = await getSessionToken();
+  if (!sessionToken) {
+    return false;
+  }
+  const { user } = await validateSessionToken(sessionToken);
+  return !!user;
+}
+
 export async function validateSessionToken(
   token: string
 ): Promise<SessionValidationResult> {

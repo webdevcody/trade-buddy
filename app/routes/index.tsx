@@ -22,11 +22,10 @@ function Home() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto text-center">
-      <h1 className="text-4xl font-bold mb-4">
-        A Healthy Life is a Better Life
-      </h1>
+      <h1 className="text-4xl font-bold mb-4">Learn and Teach from Anywhere</h1>
       <p className="text-xl text-gray-600 mb-8">
-        Sign up for a community working towards living healthier lives.
+        Join our global community of students and teachers in an interactive
+        online learning experience.
       </p>
 
       {userInfo.data.user ? (

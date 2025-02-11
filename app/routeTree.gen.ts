@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as UnauthenticatedImport } from './routes/unauthenticated'
 import { Route as LoginImport } from './routes/login'
 import { Route as AboutImport } from './routes/about'
 import { Route as DashboardRouteImport } from './routes/dashboard/route'
@@ -25,6 +26,12 @@ import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise
 import { Route as CoursesCourseIdSegmentsSegmentIdImport } from './routes/courses/$courseId/segments.$segmentId'
 
 // Create/Update Routes
+
+const UnauthenticatedRoute = UnauthenticatedImport.update({
+  id: '/unauthenticated',
+  path: '/unauthenticated',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const LoginRoute = LoginImport.update({
   id: '/login',
@@ -131,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
+    '/unauthenticated': {
+      id: '/unauthenticated'
+      path: '/unauthenticated'
+      fullPath: '/unauthenticated'
+      preLoaderRoute: typeof UnauthenticatedImport
+      parentRoute: typeof rootRoute
+    }
     '/courses/add': {
       id: '/courses/add'
       path: '/courses/add'
@@ -215,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/unauthenticated': typeof UnauthenticatedRoute
   '/courses/add': typeof CoursesAddRoute
   '/dashboard/food': typeof DashboardFoodRoute
   '/courses': typeof CoursesIndexRoute
@@ -229,6 +244,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/unauthenticated': typeof UnauthenticatedRoute
   '/courses/add': typeof CoursesAddRoute
   '/dashboard/food': typeof DashboardFoodRoute
   '/courses': typeof CoursesIndexRoute
@@ -245,6 +261,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/unauthenticated': typeof UnauthenticatedRoute
   '/courses/add': typeof CoursesAddRoute
   '/dashboard/food': typeof DashboardFoodRoute
   '/courses/': typeof CoursesIndexRoute
@@ -262,6 +279,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/about'
     | '/login'
+    | '/unauthenticated'
     | '/courses/add'
     | '/dashboard/food'
     | '/courses'
@@ -275,6 +293,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/login'
+    | '/unauthenticated'
     | '/courses/add'
     | '/dashboard/food'
     | '/courses'
@@ -289,6 +308,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/about'
     | '/login'
+    | '/unauthenticated'
     | '/courses/add'
     | '/dashboard/food'
     | '/courses/'
@@ -305,6 +325,7 @@ export interface RootRouteChildren {
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   LoginRoute: typeof LoginRoute
+  UnauthenticatedRoute: typeof UnauthenticatedRoute
   CoursesAddRoute: typeof CoursesAddRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
   CoursesCourseIdIndexRoute: typeof CoursesCourseIdIndexRoute
@@ -316,6 +337,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   LoginRoute: LoginRoute,
+  UnauthenticatedRoute: UnauthenticatedRoute,
   CoursesAddRoute: CoursesAddRoute,
   CoursesIndexRoute: CoursesIndexRoute,
   CoursesCourseIdIndexRoute: CoursesCourseIdIndexRoute,
@@ -336,6 +358,7 @@ export const routeTree = rootRoute
         "/dashboard",
         "/about",
         "/login",
+        "/unauthenticated",
         "/courses/add",
         "/courses/",
         "/courses/$courseId/",
@@ -359,6 +382,9 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.tsx"
+    },
+    "/unauthenticated": {
+      "filePath": "unauthenticated.tsx"
     },
     "/courses/add": {
       "filePath": "courses/add.tsx"

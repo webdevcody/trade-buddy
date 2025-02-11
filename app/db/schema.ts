@@ -84,7 +84,7 @@ export const courses = tableCreator("course", {
   category: text("category").notNull(),
 });
 
-export const courseBookmarks = tableCreator("course_bookmark", {
+export const courseBookmarks = tableCreator("bookmark", {
   id: serial("id").primaryKey(),
   userId: serial("userId")
     .notNull()
