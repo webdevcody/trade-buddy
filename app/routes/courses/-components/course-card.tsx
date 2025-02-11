@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { GraduationCap } from "lucide-react";
+import { Bookmark, GraduationCap } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -81,7 +81,7 @@ export function CourseCard({ course }: { course: Course }) {
             onClick={handleEnrollmentToggle}
             className="flex-shrink-0"
           >
-            <GraduationCap
+            <Bookmark
               className={cn(
                 "h-5 w-5",
                 isEnrolled ? "fill-current" : "fill-none"

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
 import { getCourseUseCase } from "~/use-cases/courses";
@@ -6,7 +6,7 @@ import { VideoPlayer } from "./-components/video-player";
 import { Button } from "~/components/ui/button";
 import React from "react";
 import { getSegmentsUseCase } from "~/use-cases/segments";
-import { ChevronRight, GraduationCap } from "lucide-react";
+import { Bookmark, ChevronRight, GraduationCap } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Container } from "../-components/container";
 import { Title } from "~/components/title";
@@ -102,7 +102,7 @@ function RouteComponent() {
             className="flex-shrink-0 transition-colors"
             aria-pressed={isBookmarked}
           >
-            <GraduationCap
+            <Bookmark
               className={cn(
                 "h-5 w-5 mr-2 transition-all",
                 isBookmarked ? "fill-current" : "fill-none"
@@ -139,19 +139,21 @@ function RouteComponent() {
         <h2 className="text-2xl font-semibold mb-4">Course Content</h2>
         <div className="space-y-4">
           {segments.map((segment, index) => (
-            <div
+            <Link
               key={segment.id}
-              className="p-4 border rounded-lg hover:bg-accent transition-colors"
+              to={`/courses/${course.id}/segments/${segment.id}`}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">
-                    {index + 1}. {segment.title}
-                  </h3>
+              <div className="p-4 border rounded-lg hover:bg-accent transition-colors">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">
+                      {index + 1}. {segment.title}
+                    </h3>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

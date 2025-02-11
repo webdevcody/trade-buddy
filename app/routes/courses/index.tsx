@@ -120,11 +120,22 @@ function RouteComponent() {
         </DropdownMenu>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
-        ))}
-      </div>
+      {courses.length === 0 ? (
+        <div className="text-center py-12">
+          <h3 className="text-lg font-semibold mb-2">No courses found</h3>
+          <p className="text-muted-foreground">
+            {searchQuery || selectedCategory
+              ? "Try adjusting your search filters"
+              : "There are no courses available yet"}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {courses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
+        </div>
+      )}
     </Container>
   );
 }
