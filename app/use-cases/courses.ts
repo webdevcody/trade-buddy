@@ -1,4 +1,12 @@
-import { createCourse, getCourse, getCourses } from "~/data-access/courses";
+import {
+  bookmarkCourse,
+  createCourse,
+  getCourse,
+  getCourses,
+  getBookmarkedCourses,
+  isBookmarked,
+  unbookmarkCourse,
+} from "~/data-access/courses";
 import { Course, CourseCreate, User } from "~/db/schema";
 
 export function createCourseUseCase(userId: User["id"], course: CourseCreate) {
@@ -19,4 +27,29 @@ export async function isCourseAdminUseCase(
 ) {
   const course = await getCourse(courseId);
   return course.userId === userId;
+}
+
+export function bookmarkCourseUseCase(
+  userId: User["id"],
+  courseId: Course["id"]
+) {
+  return bookmarkCourse(userId, courseId);
+}
+
+export function unbookmarkCourseUseCase(
+  userId: User["id"],
+  courseId: Course["id"]
+) {
+  return unbookmarkCourse(userId, courseId);
+}
+
+export function isBookmarkedUseCase(
+  userId: User["id"],
+  courseId: Course["id"]
+) {
+  return isBookmarked(userId, courseId);
+}
+
+export function getBookmarkedCoursesUseCase(userId: User["id"]) {
+  return getBookmarkedCourses(userId);
 }

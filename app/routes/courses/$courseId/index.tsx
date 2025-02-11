@@ -2,7 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
 import { useSidebar } from "~/components/ui/sidebar";
-import { getCourseUseCase } from "~/use-cases/courses";
+import {
+  getCourseUseCase,
+  isBookmarkedUseCase,
+  bookmarkCourseUseCase,
+  unbookmarkCourseUseCase,
+} from "~/use-cases/courses";
 import { VideoPlayer } from "./-components/video-player";
 import { MarkdownContent } from "./-components/markdown-content";
 import { AssignmentViewer } from "./-components/assignment-viewer";
@@ -14,10 +19,11 @@ import { MobileNavigation } from "./-components/mobile-navigation";
 import React from "react";
 import { getSegmentsUseCase } from "~/use-cases/segments";
 import { Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, BookmarkIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Container } from "../-components/container";
 import { Title } from "~/components/title";
+import { validateRequest } from "~/utils/auth";
 
 const getCourseFn = createServerFn()
   .validator(
@@ -28,6 +34,37 @@ const getCourseFn = createServerFn()
   .handler(async ({ data }) => {
     const course = await getCourseUseCase(data.courseId);
     return course;
+  });
+
+const toggleBookmarkFn = createServerFn()
+  .validator(
+    z.object({
+      courseId: z.number(),
+      isBookmarked: z.boolean(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { user } = await validateRequest();
+    if (!user) throw new Error("Not authenticated");
+
+    if (data.isBookmarked) {
+      await unbookmarkCourseUseCase(user.id, data.courseId);
+    } else {
+      await bookmarkCourseUseCase(user.id, data.courseId);
+    }
+    return !data.isBookmarked;
+  });
+
+const getIsBookmarkedFn = createServerFn()
+  .validator(
+    z.object({
+      courseId: z.number(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { user } = await validateRequest();
+    if (!user) return false;
+    return isBookmarkedUseCase(user.id, data.courseId);
   });
 
 export const Route = createFileRoute("/courses/$courseId/")({
@@ -45,11 +82,45 @@ export const Route = createFileRoute("/courses/$courseId/")({
 
 function RouteComponent() {
   const { course, segments } = Route.useLoaderData();
+  const [isBookmarked, setIsBookmarked] = React.useState(false);
+
+  React.useEffect(() => {
+    getIsBookmarkedFn({ data: { courseId: course.id } }).then(setIsBookmarked);
+  }, [course.id]);
+
+  const handleBookmarkToggle = async () => {
+    try {
+      const newIsBookmarked = await toggleBookmarkFn({
+        data: { courseId: course.id, isBookmarked },
+      });
+      setIsBookmarked(newIsBookmarked);
+    } catch (error) {
+      // TODO: Show login modal or redirect to login
+      console.error("Failed to toggle bookmark:", error);
+    }
+  };
 
   return (
     <Container>
       {/* Course Header */}
-      <Title title={course.title} />
+      <Title
+        title={course.title}
+        actions={
+          <Button
+            variant="ghost"
+            onClick={handleBookmarkToggle}
+            className="flex-shrink-0"
+          >
+            <BookmarkIcon
+              className={cn(
+                "h-5 w-5",
+                isBookmarked ? "fill-current" : "fill-none"
+              )}
+            />
+            {isBookmarked ? "Unenroll" : "Enroll"}
+          </Button>
+        }
+      />
 
       <p className="text-xl text-muted-foreground">
         Welcome to {course.title}! Get ready to embark on an exciting learning

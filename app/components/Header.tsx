@@ -22,7 +22,7 @@ export function Header() {
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-background border-b z-50">
-      <div className="container mx-auto">
+      <div className="mx-auto">
         <div className="flex h-16 items-center justify-between px-4">
           {/* Mobile Icon */}
           <div className="md:hidden">
@@ -30,7 +30,11 @@ export function Header() {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex gap-12">
+          <div className="hidden md:flex gap-12 items-center">
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/logo.png" alt="Logo" className="h-20 w-20" />
+            </Link>
+
             <Link
               to="/"
               activeProps={{

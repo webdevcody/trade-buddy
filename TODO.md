@@ -16,7 +16,6 @@
 ## Students
 
 - a student shall be able to browse courses
-- a student shall be able to bookmark courses
 - a student shall be able to mark a segment as completed
 - a student shall be able to view a dashboard with all courses they have completed
 - a student shall be able to view a dashboard with all courses they have started
