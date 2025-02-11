@@ -8,26 +8,28 @@ interface NavigationProps {
 
 export function Navigation({ prevSegment, nextSegment }: NavigationProps) {
   return (
-    <div className="flex flex-wrap gap-4 justify-between mt-6">
+    <div className="flex justify-between gap-4 mt-6">
       {prevSegment ? (
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="flex-1 max-w-[300px]">
           <a
             href={`/courses/${prevSegment.courseId}/segments/${prevSegment.id}`}
+            className="truncate"
           >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Previous: {prevSegment.title}
+            <ChevronLeft className="mr-2 h-4 w-4 shrink-0" />
+            <span className="truncate">Previous: {prevSegment.title}</span>
           </a>
         </Button>
       ) : (
-        <div></div>
+        <div className="flex-1 max-w-[300px]"></div>
       )}
       {nextSegment && (
-        <Button asChild>
+        <Button asChild className="flex-1 max-w-[300px]">
           <a
             href={`/courses/${nextSegment.courseId}/segments/${nextSegment.id}`}
+            className="truncate"
           >
-            Next: {nextSegment.title}
-            <ChevronRight className="ml-2 h-4 w-4" />
+            <span className="truncate">Next: {nextSegment.title}</span>
+            <ChevronRight className="ml-2 h-4 w-4 shrink-0" />
           </a>
         </Button>
       )}

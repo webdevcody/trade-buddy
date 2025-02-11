@@ -79,17 +79,6 @@ function CourseContent({
       </div>
 
       <div className="flex-1 w-full">
-        {/* Mobile Sidebar Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="fixed left-4 top-[4.5rem] z-50 md:hidden hover:bg-accent"
-          onClick={() => setOpenMobile(true)}
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle course navigation</span>
-        </Button>
-
         {/* Mobile Navigation */}
         <MobileNavigation
           segments={segments}
@@ -97,8 +86,19 @@ function CourseContent({
           isOpen={openMobile}
           onClose={() => setOpenMobile(false)}
         />
-        <main className="w-full p-6">
+
+        <main className="w-full p-6 pt-4">
+          {/* Mobile Sidebar Toggle */}
           <div className="space-y-8">
+            <Button
+              size="icon"
+              className="z-50 md:hidden hover:bg-accent"
+              onClick={() => setOpenMobile(true)}
+            >
+              <Menu />
+              <span className="sr-only">Toggle course navigation</span>
+            </Button>
+
             <h1 className="text-2xl font-bold">{currentSegment.title}</h1>
             <div className="w-full">
               <VideoPlayer url={currentSegment.videoUrl} />

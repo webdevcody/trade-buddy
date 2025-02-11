@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { ModeToggle } from "./ModeToggle";
 import { Menu, LayoutGrid } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { useState } from "react";
 
 export const getUserInfoFn = createServerFn().handler(async () => {
   const user = await getCurrentUser();
@@ -13,6 +14,7 @@ export const getUserInfoFn = createServerFn().handler(async () => {
 });
 
 export function Header() {
+  const [isOpen, setIsOpen] = useState(false);
   const userInfo = useSuspenseQuery({
     queryKey: ["userInfo"],
     queryFn: () => getUserInfoFn(),
@@ -75,7 +77,7 @@ export function Header() {
 
             {/* Mobile Menu */}
             <div className="md:hidden">
-              <Sheet>
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-10 w-10 p-0">
                     <Menu className="h-5 w-5" />
@@ -84,18 +86,24 @@ export function Header() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[250px] sm:w-[300px]">
                   <nav className="flex flex-col gap-4">
-                    <Link to="/" className="flex items-center py-2 text-lg">
+                    <Link
+                      to="/"
+                      className="flex items-center py-2 text-lg"
+                      onClick={() => setIsOpen(false)}
+                    >
                       Home
                     </Link>
                     <Link
                       to="/dashboard"
                       className="flex items-center py-2 text-lg"
+                      onClick={() => setIsOpen(false)}
                     >
                       Dashboard
                     </Link>
                     <Link
                       to="/courses"
                       className="flex items-center py-2 text-lg"
+                      onClick={() => setIsOpen(false)}
                     >
                       Courses
                     </Link>
