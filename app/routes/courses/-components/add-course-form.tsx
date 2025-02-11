@@ -42,7 +42,7 @@ export function AddCourseForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     createCourseFn({ data: values }).then((course) => {
-      router({ to: `/courses/${course.id}/manage` });
+      router({ to: `/courses/${course.id}` });
     });
   }
 

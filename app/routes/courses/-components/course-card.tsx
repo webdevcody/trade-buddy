@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookmarkIcon } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -12,34 +12,34 @@ import { Course } from "~/db/schema";
 import { cn } from "~/lib/utils";
 import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
+import { validateRequest } from "~/utils/auth";
+import React from "react";
 import {
   bookmarkCourseUseCase,
   isBookmarkedUseCase,
   unbookmarkCourseUseCase,
-} from "~/use-cases/courses";
-import { validateRequest } from "~/utils/auth";
-import React from "react";
+} from "~/use-cases/bookmarks";
 
-const toggleBookmarkFn = createServerFn()
+const toggleEnrollmentFn = createServerFn()
   .validator(
     z.object({
       courseId: z.number(),
-      isBookmarked: z.boolean(),
+      isEnrolled: z.boolean(),
     })
   )
   .handler(async ({ data }) => {
     const { user } = await validateRequest();
     if (!user) throw new Error("Not authenticated");
 
-    if (data.isBookmarked) {
+    if (data.isEnrolled) {
       await unbookmarkCourseUseCase(user.id, data.courseId);
     } else {
       await bookmarkCourseUseCase(user.id, data.courseId);
     }
-    return !data.isBookmarked;
+    return !data.isEnrolled;
   });
 
-const getIsBookmarkedFn = createServerFn()
+const getIsEnrolledFn = createServerFn()
   .validator(
     z.object({
       courseId: z.number(),
@@ -52,21 +52,21 @@ const getIsBookmarkedFn = createServerFn()
   });
 
 export function CourseCard({ course }: { course: Course }) {
-  const [isBookmarked, setIsBookmarked] = React.useState(false);
+  const [isEnrolled, setIsEnrolled] = React.useState(false);
 
   React.useEffect(() => {
-    getIsBookmarkedFn({ data: { courseId: course.id } }).then(setIsBookmarked);
+    getIsEnrolledFn({ data: { courseId: course.id } }).then(setIsEnrolled);
   }, [course.id]);
 
-  const handleBookmarkToggle = async () => {
+  const handleEnrollmentToggle = async () => {
     try {
-      const newIsBookmarked = await toggleBookmarkFn({
-        data: { courseId: course.id, isBookmarked },
+      const newIsEnrolled = await toggleEnrollmentFn({
+        data: { courseId: course.id, isEnrolled },
       });
-      setIsBookmarked(newIsBookmarked);
+      setIsEnrolled(newIsEnrolled);
     } catch (error) {
       // TODO: Show login modal or redirect to login
-      console.error("Failed to toggle bookmark:", error);
+      console.error("Failed to toggle enrollment:", error);
     }
   };
 
@@ -78,17 +78,17 @@ export function CourseCard({ course }: { course: Course }) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleBookmarkToggle}
+            onClick={handleEnrollmentToggle}
             className="flex-shrink-0"
           >
-            <BookmarkIcon
+            <GraduationCap
               className={cn(
                 "h-5 w-5",
-                isBookmarked ? "fill-current" : "fill-none"
+                isEnrolled ? "fill-current" : "fill-none"
               )}
             />
             <span className="sr-only">
-              {isBookmarked ? "Remove bookmark" : "Add bookmark"}
+              {isEnrolled ? "Unenroll from course" : "Enroll in course"}
             </span>
           </Button>
         </CardTitle>

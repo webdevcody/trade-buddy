@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   index,
   integer,
@@ -93,6 +94,16 @@ export const courseBookmarks = tableCreator("course_bookmark", {
     .references(() => courses.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const courseBookmarksRelations = relations(
+  courseBookmarks,
+  ({ one }) => ({
+    course: one(courses, {
+      fields: [courseBookmarks.courseId],
+      references: [courses.id],
+    }),
+  })
+);
 
 export type User = typeof users.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;

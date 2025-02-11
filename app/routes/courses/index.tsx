@@ -16,6 +16,9 @@ import React from "react";
 import { Input } from "~/components/ui/input";
 import { z } from "zod";
 import { useDebounce } from "~/hooks/use-debounce";
+import { validateRequest } from "~/utils/auth";
+import { authenticatedMiddleware } from "~/lib/auth";
+import { isAuthenticatedFn } from "~/fn/auth";
 
 const searchSchema = z.object({
   search: z.string().optional(),
@@ -35,12 +38,13 @@ export const Route = createFileRoute("/courses/")({
   component: RouteComponent,
   loader: async () => {
     const courses = await searchCoursesFn({ data: {} });
-    return { courses };
+    const isAuthenticated = await isAuthenticatedFn();
+    return { courses, isAuthenticated };
   },
 });
 
 function RouteComponent() {
-  const { courses: initialCourses } = Route.useLoaderData();
+  const { courses: initialCourses, isAuthenticated } = Route.useLoaderData();
   const [courses, setCourses] = React.useState(initialCourses);
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(
     null
@@ -75,9 +79,11 @@ function RouteComponent() {
       <Title
         title="Browse Courses"
         actions={
-          <Link to="/courses/add">
-            <Button>Add Course</Button>
-          </Link>
+          isAuthenticated ? (
+            <Link to="/courses/add">
+              <Button>Add Course</Button>
+            </Link>
+          ) : null
         }
       />
 

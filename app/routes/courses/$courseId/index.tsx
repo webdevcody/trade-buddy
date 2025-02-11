@@ -1,29 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
-import { useSidebar } from "~/components/ui/sidebar";
-import {
-  getCourseUseCase,
-  isBookmarkedUseCase,
-  bookmarkCourseUseCase,
-  unbookmarkCourseUseCase,
-} from "~/use-cases/courses";
+import { getCourseUseCase } from "~/use-cases/courses";
 import { VideoPlayer } from "./-components/video-player";
-import { MarkdownContent } from "./-components/markdown-content";
-import { AssignmentViewer } from "./-components/assignment-viewer";
-import { Navigation } from "./-components/navigation";
 import { Button } from "~/components/ui/button";
-import { Menu } from "lucide-react";
-import { DesktopNavigation } from "./-components/desktop-navigation";
-import { MobileNavigation } from "./-components/mobile-navigation";
 import React from "react";
 import { getSegmentsUseCase } from "~/use-cases/segments";
-import { Link } from "@tanstack/react-router";
-import { ChevronRight, BookmarkIcon } from "lucide-react";
+import { ChevronRight, GraduationCap } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Container } from "../-components/container";
 import { Title } from "~/components/title";
 import { validateRequest } from "~/utils/auth";
+import {
+  bookmarkCourseUseCase,
+  isBookmarkedUseCase,
+  unbookmarkCourseUseCase,
+} from "~/use-cases/bookmarks";
 
 const getCourseFn = createServerFn()
   .validator(
@@ -70,12 +62,10 @@ const getIsBookmarkedFn = createServerFn()
 export const Route = createFileRoute("/courses/$courseId/")({
   component: RouteComponent,
   loader: async ({ params }) => {
-    const [course, segments] = await Promise.all([
-      getCourseFn({
-        data: { courseId: Number(params.courseId) },
-      }),
-      getSegmentsUseCase(Number(params.courseId)),
-    ]);
+    const course = await getCourseFn({
+      data: { courseId: parseInt(params.courseId) },
+    });
+    const segments = await getSegmentsUseCase(course.id);
     return { course, segments };
   },
 });
@@ -107,17 +97,18 @@ function RouteComponent() {
         title={course.title}
         actions={
           <Button
-            variant="ghost"
+            variant={isBookmarked ? "secondary" : "outline"}
             onClick={handleBookmarkToggle}
-            className="flex-shrink-0"
+            className="flex-shrink-0 transition-colors"
+            aria-pressed={isBookmarked}
           >
-            <BookmarkIcon
+            <GraduationCap
               className={cn(
-                "h-5 w-5",
+                "h-5 w-5 mr-2 transition-all",
                 isBookmarked ? "fill-current" : "fill-none"
               )}
             />
-            {isBookmarked ? "Unenroll" : "Enroll"}
+            {isBookmarked ? "Bookmarked" : "Bookmark"}
           </Button>
         }
       />
@@ -144,32 +135,23 @@ function RouteComponent() {
       </div>
 
       {/* Segments List */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Course Content</h2>
-        <div className="grid gap-4">
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Course Content</h2>
+        <div className="space-y-4">
           {segments.map((segment, index) => (
-            <Link
+            <div
               key={segment.id}
-              to="/courses/$courseId/segments/$segmentId"
-              params={{
-                courseId: course.id.toString(),
-                segmentId: segment.id,
-              }}
-              className={cn(
-                "group p-4 border rounded-lg hover:bg-accent transition-colors",
-                "flex items-center justify-between"
-              )}
+              className="p-4 border rounded-lg hover:bg-accent transition-colors"
             >
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <span className="flex-shrink-0 size-6 flex items-center justify-center rounded-full bg-muted font-medium text-sm">
-                    {index + 1}
-                  </span>
-                  <h3 className="font-medium">{segment.title}</h3>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">
+                    {index + 1}. {segment.title}
+                  </h3>
                 </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </Link>
+            </div>
           ))}
         </div>
       </div>
