@@ -97,7 +97,6 @@ function CourseContent({
           isOpen={openMobile}
           onClose={() => setOpenMobile(false)}
         />
-
         <main className="w-full p-6">
           <div className="space-y-8">
             <h1 className="text-2xl font-bold">{currentSegment.title}</h1>

@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 interface Segment {
   id: string;
   title: string;
+  courseId: string;
 }
 
 interface MobileNavigationProps {
@@ -22,9 +23,12 @@ export function MobileNavigation({
 }: MobileNavigationProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="left" className="w-full max-w-[85vw] p-0">
-        <div className="sticky top-0 right-0 flex items-center justify-between p-6 bg-background border-b">
-          <h2 className="text-2xl font-semibold">Course Navigation</h2>
+      <SheetContent
+        side="left"
+        className="w-full max-w-[85vw] p-0 flex flex-col gap-0"
+      >
+        <div className="sticky top-0 right-0 flex items-center justify-between p-6 bg-background border-b z-10">
+          <h2 className="text-lg font-semibold">Course Navigation</h2>
           <Button
             variant="ghost"
             size="icon"
@@ -35,12 +39,12 @@ export function MobileNavigation({
             <span className="sr-only">Close navigation</span>
           </Button>
         </div>
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-border overflow-y-auto flex-1">
           {segments.map((segment) => (
             <a
               key={segment.id}
-              href={`/course/${segment.id}`}
-              className={`flex items-center gap-6 p-6 hover:bg-accent/50 transition-colors ${
+              href={`/courses/${segment.courseId}/segments/${segment.id}`}
+              className={`flex items-center gap-6 p-4 hover:bg-accent/50 transition-colors ${
                 segment.id === currentSegmentId ? "bg-accent/50" : ""
               }`}
             >

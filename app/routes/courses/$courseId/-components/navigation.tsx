@@ -8,7 +8,7 @@ interface NavigationProps {
 
 export function Navigation({ prevSegment, nextSegment }: NavigationProps) {
   return (
-    <div className="flex justify-between mt-6">
+    <div className="flex flex-wrap gap-4 justify-between mt-6">
       {prevSegment ? (
         <Button variant="outline" asChild>
           <a

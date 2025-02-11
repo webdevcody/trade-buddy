@@ -4,13 +4,8 @@ import { createServerFn } from "@tanstack/start";
 import { getCurrentUser } from "~/utils/session";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./ModeToggle";
-import { Menu } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import { Menu, LayoutGrid } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 export const getUserInfoFn = createServerFn().handler(async () => {
   const user = await getCurrentUser();
@@ -25,74 +20,89 @@ export function Header() {
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-background border-b z-50">
-      <div className="container mx-auto flex justify-between items-center text-lg py-4">
-        {/* Mobile Menu */}
-        <div className="md:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem asChild>
-                <Link to="/">Home</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard">Dashboard</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/courses">Courses</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <div className="container mx-auto">
+        <div className="flex h-16 items-center justify-between px-4">
+          {/* Mobile Icon */}
+          <div className="md:hidden">
+            <LayoutGrid className="h-5 w-5" />
+          </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex gap-12">
-          <Link
-            to="/"
-            activeProps={{
-              className: "font-bold",
-            }}
-            activeOptions={{ exact: true }}
-          >
-            Home
-          </Link>
-          <Link
-            to="/dashboard"
-            activeProps={{
-              className: "font-bold",
-            }}
-            activeOptions={{ exact: true }}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/courses"
-            activeProps={{
-              className: "font-bold",
-            }}
-            activeOptions={{ exact: true }}
-          >
-            Courses
-          </Link>
-        </div>
+          {/* Desktop Menu */}
+          <div className="hidden md:flex gap-12">
+            <Link
+              to="/"
+              activeProps={{
+                className: "font-bold",
+              }}
+              activeOptions={{ exact: true }}
+            >
+              Home
+            </Link>
+            <Link
+              to="/dashboard"
+              activeProps={{
+                className: "font-bold",
+              }}
+              activeOptions={{ exact: true }}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/courses"
+              activeProps={{
+                className: "font-bold",
+              }}
+              activeOptions={{ exact: true }}
+            >
+              Courses
+            </Link>
+          </div>
 
-        <div className="flex gap-4">
-          {userInfo.data.user ? (
-            <a href="/api/logout">
-              <Button>Sign Out</Button>
-            </a>
-          ) : (
-            <a href="/api/login/google">
-              <Button>Sign In</Button>
-            </a>
-          )}
+          <div className="flex items-center gap-4">
+            {userInfo.data.user ? (
+              <a href="/api/logout" className="hidden md:block">
+                <Button>Sign Out</Button>
+              </a>
+            ) : (
+              <a href="/api/login/google" className="hidden md:block">
+                <Button>Sign In</Button>
+              </a>
+            )}
 
-          <div className="hidden md:block">
-            <ModeToggle />
+            <div className="hidden md:block">
+              <ModeToggle />
+            </div>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-10 w-10 p-0">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[250px] sm:w-[300px]">
+                  <nav className="flex flex-col gap-4">
+                    <Link to="/" className="flex items-center py-2 text-lg">
+                      Home
+                    </Link>
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center py-2 text-lg"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/courses"
+                      className="flex items-center py-2 text-lg"
+                    >
+                      Courses
+                    </Link>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>
