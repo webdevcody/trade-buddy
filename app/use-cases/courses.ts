@@ -6,6 +6,7 @@ import {
   getBookmarkedCourses,
   isBookmarked,
   unbookmarkCourse,
+  GetCoursesOptions,
 } from "~/data-access/courses";
 import { Course, CourseCreate, User } from "~/db/schema";
 
@@ -13,8 +14,8 @@ export function createCourseUseCase(userId: User["id"], course: CourseCreate) {
   return createCourse({ ...course, userId });
 }
 
-export function getCoursesUseCase() {
-  return getCourses();
+export function getCoursesUseCase(options?: GetCoursesOptions) {
+  return getCourses(options);
 }
 
 export function getCourseUseCase(courseId: Course["id"]) {

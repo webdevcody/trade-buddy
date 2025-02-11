@@ -5,7 +5,7 @@ import {
   courses,
   User,
 } from "~/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ilike, or } from "drizzle-orm";
 import { database } from "~/db";
 
 export async function createCourse(course: CourseCreate) {
@@ -13,8 +13,29 @@ export async function createCourse(course: CourseCreate) {
   return inserted[0];
 }
 
-export async function getCourses() {
-  return database.select().from(courses);
+export interface GetCoursesOptions {
+  search?: string;
+  category?: string;
+}
+
+export async function getCourses(options?: GetCoursesOptions) {
+  const query = database.select().from(courses);
+
+  const conditions = [];
+
+  if (options?.search) {
+    conditions.push(ilike(courses.title, `%${options.search}%`));
+  }
+
+  if (options?.category) {
+    conditions.push(eq(courses.category, options.category));
+  }
+
+  if (conditions.length > 0) {
+    return query.where(and(...conditions));
+  }
+
+  return query;
 }
 
 export async function getCourse(courseId: Course["id"]) {
