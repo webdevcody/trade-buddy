@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { database } from "~/db";
-import { segments, type Segment, type SegmentCreate } from "~/db/schema";
+import { segments, type SegmentCreate } from "~/db/schema";
 
 export async function getSegmentsByCourseId(courseId: number) {
   return database.query.segments.findMany({

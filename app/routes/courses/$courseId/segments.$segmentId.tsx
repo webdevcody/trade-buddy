@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
 import { SidebarProvider, useSidebar } from "~/components/ui/sidebar";
@@ -12,28 +12,44 @@ import { Menu } from "lucide-react";
 import { DesktopNavigation } from "./-components/desktop-navigation";
 import { MobileNavigation } from "./-components/mobile-navigation";
 import React from "react";
-import { getSegmentsUseCase } from "~/use-cases/segments";
+import { getSegmentUseCase } from "~/use-cases/segments";
 import { NotFound } from "~/components/NotFound";
+import { getSegmentsByCourseId } from "~/data-access/segments";
+import { Course, Segment } from "~/db/schema";
 
-const getCourseFn = createServerFn()
+const getSegmentInfoFn = createServerFn()
   .validator(
     z.object({
       courseId: z.coerce.number(),
+      segmentId: z.coerce.number(),
     })
   )
   .handler(async ({ data }) => {
-    const course = await getCourseUseCase(data.courseId);
-    return course;
+    return await Promise.all([
+      getCourseUseCase(data.courseId),
+      getSegmentUseCase(data.segmentId),
+      getSegmentsByCourseId(data.courseId),
+    ]);
   });
 
 export const Route = createFileRoute("/courses/$courseId/segments/$segmentId")({
   component: RouteComponent,
   loader: async ({ params }) => {
-    const course = await getCourseFn({
-      data: { courseId: Number(params.courseId) },
+    const courseInfo = await getSegmentInfoFn({
+      data: {
+        courseId: Number(params.courseId),
+        segmentId: Number(params.segmentId),
+      },
     });
-    const segments = await getSegmentsUseCase(course.id);
-    return { course, segments };
+    const [course, segment, segments] = courseInfo;
+
+    if (!segment) {
+      throw redirect({
+        to: "/", // TODO: redirect to a 404 page
+      });
+    }
+
+    return { course, segment, segments };
   },
 });
 
@@ -43,10 +59,10 @@ function CourseContent({
   currentSegment,
   currentSegmentId,
 }: {
-  course: any;
-  segments: any[];
-  currentSegment: any;
-  currentSegmentId: string;
+  course: Course;
+  segments: Segment[];
+  currentSegment: Segment;
+  currentSegmentId: Segment["id"];
 }) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
 
@@ -104,7 +120,7 @@ function CourseContent({
               <VideoPlayer url={currentSegment.videoUrl} />
             </div>
             <MarkdownContent content={currentSegment.content} />
-            <AssignmentViewer assignments={currentSegment.assignments} />
+            <AssignmentViewer assignments={currentSegment.assignments ?? []} />
             <Navigation prevSegment={prevSegment} nextSegment={nextSegment} />
           </div>
         </main>
@@ -114,13 +130,9 @@ function CourseContent({
 }
 
 function RouteComponent() {
-  const { course, segments } = Route.useLoaderData();
+  const { course, segment, segments } = Route.useLoaderData();
 
-  const currentSegment = segments.find(
-    (segment) => segment.id === Route.useParams().segmentId
-  );
-
-  const currentSegmentId = currentSegment?.id;
+  const currentSegmentId = segment?.id;
 
   if (!currentSegmentId) {
     return <NotFound />;
@@ -131,8 +143,8 @@ function RouteComponent() {
       <CourseContent
         course={course}
         segments={segments}
-        currentSegment={currentSegment}
-        currentSegmentId={currentSegmentId}
+        currentSegment={segment}
+        currentSegmentId={currentSegmentId.toString()}
       />
     </SidebarProvider>
   );

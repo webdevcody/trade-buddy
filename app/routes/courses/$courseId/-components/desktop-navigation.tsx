@@ -36,7 +36,7 @@ export function DesktopNavigation({
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {segments.map((segment) => (
+                {segments.map((segment, index) => (
                   <SidebarMenuItem key={segment.id}>
                     <SidebarMenuButton
                       asChild
@@ -48,7 +48,7 @@ export function DesktopNavigation({
                         className="flex items-center gap-2 w-full"
                       >
                         <span className="flex-shrink-0 size-5 flex items-center justify-center rounded-full bg-muted font-medium text-xs">
-                          {segment.id}
+                          {index + 1}
                         </span>
                         <span>{segment.title}</span>
                       </a>

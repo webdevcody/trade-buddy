@@ -8,9 +8,13 @@ export const isAuthenticatedFn = createServerFn().handler(async () => {
 });
 
 export const assertAuthenticatedFn = createServerFn().handler(async () => {
-  if (!(await isAuthenticatedFn())) {
+  const { user } = await validateRequest();
+
+  if (!user) {
     throw redirect({
       to: "/unauthenticated",
     });
   }
+
+  return user;
 });

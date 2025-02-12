@@ -1,12 +1,7 @@
 import { Sheet, SheetContent } from "~/components/ui/sheet";
 import { Button } from "~/components/ui/button";
 import { X } from "lucide-react";
-
-interface Segment {
-  id: string;
-  title: string;
-  courseId: string;
-}
+import { Segment } from "~/db/schema";
 
 interface MobileNavigationProps {
   segments: Segment[];
@@ -40,16 +35,16 @@ export function MobileNavigation({
           </Button>
         </div>
         <div className="divide-y divide-border overflow-y-auto flex-1">
-          {segments.map((segment) => (
+          {segments.map((segment, index) => (
             <a
               key={segment.id}
               href={`/courses/${segment.courseId}/segments/${segment.id}`}
               className={`flex items-center gap-6 p-4 hover:bg-accent/50 transition-colors ${
-                segment.id === currentSegmentId ? "bg-accent/50" : ""
+                segment.id.toString() === currentSegmentId ? "bg-accent/50" : ""
               }`}
             >
               <div className="flex-shrink-0 size-10 flex items-center justify-center rounded-full bg-background border text-lg font-medium">
-                {segment.id}
+                {index + 1}
               </div>
               <span className="text-lg">{segment.title}</span>
             </a>

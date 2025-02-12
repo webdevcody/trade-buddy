@@ -23,6 +23,7 @@ import { Route as CoursesAddImport } from './routes/courses/add'
 import { Route as DashboardExerciseIndexImport } from './routes/dashboard/exercise.index'
 import { Route as CoursesCourseIdIndexImport } from './routes/courses/$courseId/index'
 import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise.add'
+import { Route as CoursesCourseIdSegmentsAddImport } from './routes/courses/$courseId/segments.add'
 import { Route as CoursesCourseIdSegmentsSegmentIdImport } from './routes/courses/$courseId/segments.$segmentId'
 
 // Create/Update Routes
@@ -98,6 +99,14 @@ const DashboardExerciseAddRoute = DashboardExerciseAddImport.update({
   path: '/exercise/add',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+
+const CoursesCourseIdSegmentsAddRoute = CoursesCourseIdSegmentsAddImport.update(
+  {
+    id: '/courses/$courseId/segments/add',
+    path: '/courses/$courseId/segments/add',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
 
 const CoursesCourseIdSegmentsSegmentIdRoute =
   CoursesCourseIdSegmentsSegmentIdImport.update({
@@ -201,6 +210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesCourseIdSegmentsSegmentIdImport
       parentRoute: typeof rootRoute
     }
+    '/courses/$courseId/segments/add': {
+      id: '/courses/$courseId/segments/add'
+      path: '/courses/$courseId/segments/add'
+      fullPath: '/courses/$courseId/segments/add'
+      preLoaderRoute: typeof CoursesCourseIdSegmentsAddImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -238,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
   '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
+  '/courses/$courseId/segments/add': typeof CoursesCourseIdSegmentsAddRoute
 }
 
 export interface FileRoutesByTo {
@@ -253,6 +270,7 @@ export interface FileRoutesByTo {
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
   '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
+  '/courses/$courseId/segments/add': typeof CoursesCourseIdSegmentsAddRoute
 }
 
 export interface FileRoutesById {
@@ -270,6 +288,7 @@ export interface FileRoutesById {
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise/': typeof DashboardExerciseIndexRoute
   '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
+  '/courses/$courseId/segments/add': typeof CoursesCourseIdSegmentsAddRoute
 }
 
 export interface FileRouteTypes {
@@ -288,6 +307,7 @@ export interface FileRouteTypes {
     | '/courses/$courseId'
     | '/dashboard/exercise'
     | '/courses/$courseId/segments/$segmentId'
+    | '/courses/$courseId/segments/add'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -302,6 +322,7 @@ export interface FileRouteTypes {
     | '/courses/$courseId'
     | '/dashboard/exercise'
     | '/courses/$courseId/segments/$segmentId'
+    | '/courses/$courseId/segments/add'
   id:
     | '__root__'
     | '/'
@@ -317,6 +338,7 @@ export interface FileRouteTypes {
     | '/courses/$courseId/'
     | '/dashboard/exercise/'
     | '/courses/$courseId/segments/$segmentId'
+    | '/courses/$courseId/segments/add'
   fileRoutesById: FileRoutesById
 }
 
@@ -330,6 +352,7 @@ export interface RootRouteChildren {
   CoursesIndexRoute: typeof CoursesIndexRoute
   CoursesCourseIdIndexRoute: typeof CoursesCourseIdIndexRoute
   CoursesCourseIdSegmentsSegmentIdRoute: typeof CoursesCourseIdSegmentsSegmentIdRoute
+  CoursesCourseIdSegmentsAddRoute: typeof CoursesCourseIdSegmentsAddRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -342,6 +365,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesIndexRoute: CoursesIndexRoute,
   CoursesCourseIdIndexRoute: CoursesCourseIdIndexRoute,
   CoursesCourseIdSegmentsSegmentIdRoute: CoursesCourseIdSegmentsSegmentIdRoute,
+  CoursesCourseIdSegmentsAddRoute: CoursesCourseIdSegmentsAddRoute,
 }
 
 export const routeTree = rootRoute
@@ -362,7 +386,8 @@ export const routeTree = rootRoute
         "/courses/add",
         "/courses/",
         "/courses/$courseId/",
-        "/courses/$courseId/segments/$segmentId"
+        "/courses/$courseId/segments/$segmentId",
+        "/courses/$courseId/segments/add"
       ]
     },
     "/": {
@@ -413,6 +438,9 @@ export const routeTree = rootRoute
     },
     "/courses/$courseId/segments/$segmentId": {
       "filePath": "courses/$courseId/segments.$segmentId.tsx"
+    },
+    "/courses/$courseId/segments/add": {
+      "filePath": "courses/$courseId/segments.add.tsx"
     }
   }
 }
