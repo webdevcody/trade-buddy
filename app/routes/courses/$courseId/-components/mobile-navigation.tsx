@@ -1,20 +1,24 @@
 import { Sheet, SheetContent } from "~/components/ui/sheet";
 import { Button } from "~/components/ui/button";
-import { X } from "lucide-react";
-import { Segment } from "~/db/schema";
+import { X, Plus } from "lucide-react";
+import { Course, Segment } from "~/db/schema";
 
 interface MobileNavigationProps {
   segments: Segment[];
+  courseId: Course["id"];
   currentSegmentId: Segment["id"];
   isOpen: boolean;
   onClose: () => void;
+  isAdmin: boolean;
 }
 
 export function MobileNavigation({
   segments,
+  courseId,
   currentSegmentId,
   isOpen,
   onClose,
+  isAdmin,
 }: MobileNavigationProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -23,7 +27,9 @@ export function MobileNavigation({
         className="w-full max-w-[85vw] p-0 flex flex-col gap-0"
       >
         <div className="sticky top-0 right-0 flex items-center justify-between p-6 bg-background border-b z-10">
-          <h2 className="text-lg font-semibold">Course Navigation</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold">Course Navigation</h2>
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -38,7 +44,7 @@ export function MobileNavigation({
           {segments.map((segment, index) => (
             <a
               key={segment.id}
-              href={`/courses/${segment.courseId}/segments/${segment.id}`}
+              href={`/courses/${courseId}/segments/${segment.id}`}
               className={`flex items-center gap-6 p-4 hover:bg-accent/50 transition-colors ${
                 segment.id === currentSegmentId ? "bg-accent/50" : ""
               }`}
@@ -50,6 +56,15 @@ export function MobileNavigation({
             </a>
           ))}
         </div>
+
+        {isAdmin && (
+          <Button variant="secondary" className="py-8" asChild>
+            <a href={`/courses/${courseId}/segments/add`}>
+              <Plus className="h-4 w-4" /> Add Segment
+              <span className="sr-only">Create new segment</span>
+            </a>
+          </Button>
+        )}
       </SheetContent>
     </Sheet>
   );

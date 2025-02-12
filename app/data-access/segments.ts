@@ -28,9 +28,9 @@ export async function updateSegment(
   data: {
     title: string;
     content: string;
+    videoKey?: string;
   }
 ) {
-  console.log("updating segment");
   return await database
     .update(segments)
     .set({ ...data, updatedAt: new Date() })

@@ -11,17 +11,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
-import { authenticatedMiddleware, isCourseAdminMiddleware } from "~/lib/auth";
+import { authenticatedMiddleware } from "~/lib/auth";
 import { isCourseAdminUseCase } from "~/use-cases/courses";
 import { getSegmentUseCase, updateSegmentUseCase } from "~/use-cases/segments";
 import { assertAuthenticatedFn } from "~/fn/auth";
 import { ChevronLeft } from "lucide-react";
-import { getSegmentById } from "~/data-access/segments";
 import { Container } from "~/routes/courses/-components/container";
+import { v4 as uuidv4 } from "uuid";
+import { getPresignedPostUrlFn } from "~/fn/storage";
+
+function generateRandomUUID() {
+  return uuidv4();
+}
 
 const formSchema = z.object({
   title: z
@@ -29,6 +35,7 @@ const formSchema = z.object({
     .min(2, "Title must be at least 2 characters")
     .max(100, "Title must be less than 100 characters"),
   content: z.string().min(10, "Content must be at least 10 characters"),
+  video: z.instanceof(File).optional(),
 });
 
 const updateSegmentFn = createServerFn()
@@ -36,7 +43,11 @@ const updateSegmentFn = createServerFn()
   .validator(
     z.object({
       segmentId: z.number(),
-      data: formSchema,
+      data: z.object({
+        title: z.string(),
+        content: z.string(),
+        videoKey: z.string().optional(),
+      }),
     })
   )
   .handler(async ({ data, context }) => {
@@ -49,7 +60,6 @@ const updateSegmentFn = createServerFn()
     );
     if (!isAdmin) throw new Error("Not authorized");
 
-    console.log("updating segment");
     return await updateSegmentUseCase(data.segmentId, data.data);
   });
 
@@ -97,19 +107,48 @@ function RouteComponent() {
     defaultValues: {
       title: segment.title,
       content: segment.content,
+      video: undefined,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      let videoKey = undefined;
+      if (values.video) {
+        videoKey = generateRandomUUID();
+        const presignedPost = await getPresignedPostUrlFn({
+          data: {
+            key: videoKey,
+            contentType: values.video.type,
+          },
+        });
+
+        const formData = new FormData();
+        Object.entries(presignedPost.fields).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+        formData.append("file", values.video);
+
+        const uploadResponse = await fetch(presignedPost.url, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload video");
+        }
+      }
+
       await updateSegmentFn({
         data: {
           segmentId,
-          data: values,
+          data: {
+            title: values.title,
+            content: values.content,
+            videoKey: videoKey,
+          },
         },
       });
-
-      console.log("segment updated");
 
       // Navigate back to the segment
       navigate({
@@ -175,6 +214,30 @@ function RouteComponent() {
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="video"
+              render={({ field: { value, onChange, ...field } }) => (
+                <FormItem>
+                  <FormLabel>Segment Video</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) =>
+                        onChange(e.target.files ? e.target.files[0] : undefined)
+                      }
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Upload a video file for your segment (optional)
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -94,6 +94,7 @@ export const segments = tableCreator("segment", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   order: integer("order").notNull(),
+  videoKey: text("videoKey"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

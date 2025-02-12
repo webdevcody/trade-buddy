@@ -9,26 +9,32 @@ import {
   SidebarContent,
 } from "~/components/ui/sidebar";
 import { Course, Segment } from "~/db/schema";
+import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface DesktopNavigationProps {
   segments: Segment[];
   courseId: Course["id"];
   currentSegmentId: Segment["id"];
+  isAdmin: boolean;
 }
 
 export function DesktopNavigation({
   segments,
   courseId,
   currentSegmentId,
+  isAdmin,
 }: DesktopNavigationProps) {
   return (
     <Sidebar className="fixed top-0 left-0 bottom-0 w-80 border-r">
       <SidebarContent className="pt-[4.5rem]">
         <div className="px-4">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-sm font-medium px-2 py-2 text-muted-foreground">
-              Sections
-            </SidebarGroupLabel>
+            <div className="flex items-center justify-between px-2 py-2">
+              <SidebarGroupLabel className="text-sm font-medium text-muted-foreground">
+                Sections
+              </SidebarGroupLabel>
+            </div>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
                 {segments.map((segment, index) => (
@@ -50,6 +56,15 @@ export function DesktopNavigation({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+
+                {isAdmin && (
+                  <Button variant="secondary" asChild>
+                    <a href={`/courses/${courseId}/segments/add`}>
+                      <Plus className="h-4 w-4" /> Add Segment
+                      <span className="sr-only">Create new segment</span>
+                    </a>
+                  </Button>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

@@ -14,6 +14,8 @@ import { MarkdownContent } from "../../-components/markdown-content";
 import { Navigation } from "../../-components/navigation";
 import { MobileNavigation } from "../../-components/mobile-navigation";
 import { DesktopNavigation } from "../../-components/desktop-navigation";
+import { VideoPlayer } from "../../-components/video-player";
+import { getStorageUrl } from "~/utils/storage";
 
 const getSegmentInfoFn = createServerFn()
   .validator(
@@ -100,6 +102,7 @@ function ViewSegment({
         <DesktopNavigation
           segments={segments}
           courseId={course.id}
+          isAdmin={isAdmin}
           currentSegmentId={currentSegmentId}
         />
       </div>
@@ -108,6 +111,8 @@ function ViewSegment({
         {/* Mobile Navigation */}
         <MobileNavigation
           segments={segments}
+          courseId={course.id}
+          isAdmin={isAdmin}
           currentSegmentId={currentSegmentId}
           isOpen={openMobile}
           onClose={() => setOpenMobile(false)}
@@ -115,7 +120,7 @@ function ViewSegment({
 
         <main className="w-full p-6 pt-4">
           {/* Mobile Sidebar Toggle */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <Button
               size="icon"
               className="z-50 md:hidden hover:bg-accent"
@@ -140,13 +145,14 @@ function ViewSegment({
                 </Link>
               )}
             </div>
-            <div className="w-full">
-              <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                <span className="text-gray-500">
-                  Video content will be displayed here
-                </span>
+
+            {currentSegment.videoKey && (
+              <div className="w-full">
+                <VideoPlayer url={getStorageUrl(currentSegment.videoKey)} />
               </div>
-            </div>
+            )}
+
+            <h2 className="text-xl font-bold">Segment Content</h2>
             <MarkdownContent content={currentSegment.content} />
             <Navigation prevSegment={prevSegment} nextSegment={nextSegment} />
           </div>

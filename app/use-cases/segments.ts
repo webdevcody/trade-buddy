@@ -52,9 +52,11 @@ export async function updateSegmentUseCase(
   data: {
     title: string;
     content: string;
+    videoKey?: string;
   }
 ) {
-  return await updateSegment(segmentId, data);
+  const { title, content, videoKey } = data;
+  return await updateSegment(segmentId, { title, content, videoKey });
 }
 
 export async function deleteSegmentUseCase(id: number) {
