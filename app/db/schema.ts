@@ -99,14 +99,32 @@ export const segments = tableCreator("segment", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const attachments = tableCreator("attachment", {
+  id: serial("id").primaryKey(),
+  segmentId: serial("segmentId")
+    .notNull()
+    .references(() => segments.id, { onDelete: "cascade" }),
+  fileName: text("fileName").notNull(),
+  fileKey: text("fileKey").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const coursesRelations = relations(courses, ({ many }) => ({
   segments: many(segments),
 }));
 
-export const segmentsRelations = relations(segments, ({ one }) => ({
+export const segmentsRelations = relations(segments, ({ one, many }) => ({
   course: one(courses, {
     fields: [segments.courseId],
     references: [courses.id],
+  }),
+  attachments: many(attachments),
+}));
+
+export const attachmentsRelations = relations(attachments, ({ one }) => ({
+  segment: one(segments, {
+    fields: [attachments.segmentId],
+    references: [segments.id],
   }),
 }));
 
@@ -143,3 +161,5 @@ export type CourseBookmark = typeof courseBookmarks.$inferSelect;
 export type CourseBookmarkInsert = typeof courseBookmarks.$inferInsert;
 export type Segment = typeof segments.$inferSelect;
 export type SegmentCreate = typeof segments.$inferInsert;
+export type Attachment = typeof attachments.$inferSelect;
+export type AttachmentCreate = typeof attachments.$inferInsert;

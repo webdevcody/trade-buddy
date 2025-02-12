@@ -25,14 +25,9 @@ import {
 import { assertAuthenticatedFn } from "~/fn/auth";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Container } from "~/routes/courses/-components/container";
-import { v4 as uuidv4 } from "uuid";
-import { getPresignedPostUrlFn } from "~/fn/storage";
 import { useEffect, useState } from "react";
 import { uploadFile } from "~/utils/storage";
-
-function generateRandomUUID() {
-  return uuidv4();
-}
+import { generateRandomUUID } from "~/utils/uuid";
 
 const formSchema = z.object({
   title: z

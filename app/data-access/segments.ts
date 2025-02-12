@@ -1,6 +1,12 @@
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { database } from "~/db";
-import { Segment, segments, type SegmentCreate } from "~/db/schema";
+import {
+  Segment,
+  segments,
+  type SegmentCreate,
+  attachments,
+  type AttachmentCreate,
+} from "~/db/schema";
 
 export async function getSegmentsByCourseId(courseId: number) {
   return database.query.segments.findMany({
@@ -67,4 +73,27 @@ export async function getPreviousSegment(
     ),
     orderBy: desc(segments.order),
   });
+}
+
+export async function getSegmentAttachments(segmentId: number) {
+  return await database.query.attachments.findMany({
+    where: eq(attachments.segmentId, segmentId),
+    orderBy: (attachments) => attachments.createdAt,
+  });
+}
+
+export async function createAttachment(attachment: AttachmentCreate) {
+  const [created] = await database
+    .insert(attachments)
+    .values(attachment)
+    .returning();
+  return created;
+}
+
+export async function deleteAttachment(id: number) {
+  const [deleted] = await database
+    .delete(attachments)
+    .where(eq(attachments.id, id))
+    .returning();
+  return deleted;
 }
