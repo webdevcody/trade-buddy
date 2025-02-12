@@ -42,7 +42,7 @@ export function DesktopNavigation({
                     <SidebarMenuButton
                       asChild
                       isActive={segment.id === currentSegmentId}
-                      className="rounded-md transition-colors w-full py-2 px-2 hover:bg-accent text-sm"
+                      className="rounded-md transition-colors w-full py-2 px-2 hover:bg-accent text-sm data-[active=true]:bg-accent data-[active=true]:font-medium"
                     >
                       <a
                         href={`/courses/${courseId}/segments/${segment.id}`}

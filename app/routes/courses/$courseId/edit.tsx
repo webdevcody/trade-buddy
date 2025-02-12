@@ -23,11 +23,12 @@ import {
   updateCourseUseCase,
 } from "~/use-cases/courses";
 import { assertAuthenticatedFn } from "~/fn/auth";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import { Container } from "~/routes/courses/-components/container";
 import { v4 as uuidv4 } from "uuid";
 import { getPresignedPostUrlFn } from "~/fn/storage";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { uploadFile } from "~/utils/storage";
 
 function generateRandomUUID() {
   return uuidv4();
@@ -103,6 +104,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const courseId = parseInt(params.courseId);
   const course = Route.useLoaderData();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -125,30 +127,11 @@ function RouteComponent() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      setIsSubmitting(true);
       let videoKey = undefined;
       if (values.video) {
         videoKey = generateRandomUUID();
-        const presignedPost = await getPresignedPostUrlFn({
-          data: {
-            key: videoKey,
-            contentType: values.video.type,
-          },
-        });
-
-        const formData = new FormData();
-        Object.entries(presignedPost.fields).forEach(([key, value]) => {
-          formData.append(key, value);
-        });
-        formData.append("file", values.video);
-
-        const uploadResponse = await fetch(presignedPost.url, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error("Failed to upload video");
-        }
+        await uploadFile(videoKey, values.video);
       }
 
       await updateCourseFn({
@@ -173,6 +156,8 @@ function RouteComponent() {
     } catch (error) {
       console.error("Failed to update course:", error);
       // TODO: Show error toast
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -271,7 +256,16 @@ function RouteComponent() {
             />
 
             <div className="flex justify-end">
-              <Button type="submit">Update Course</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Course"
+                )}
+              </Button>
             </div>
           </form>
         </Form>
