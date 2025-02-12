@@ -1,9 +1,11 @@
 import {
   createCourse,
+  getBookmarkedCourses,
   getCourse,
   getCourses,
   GetCoursesOptions,
 } from "~/data-access/courses";
+import { getSegmentsByCourseId } from "~/data-access/segments";
 import { Course, CourseCreate, User } from "~/db/schema";
 
 export function createCourseUseCase(userId: User["id"], course: CourseCreate) {
@@ -24,4 +26,18 @@ export async function isCourseAdminUseCase(
 ) {
   const course = await getCourse(courseId);
   return course.userId === userId;
+}
+
+export async function getBookmarkedCoursesUseCase(userId: User["id"]) {
+  const enrolledCourses = await getBookmarkedCourses(userId);
+  const coursesWithSegments = await Promise.all(
+    enrolledCourses.map(async (enrollment) => {
+      const segments = await getSegmentsByCourseId(enrollment.course.id);
+      return {
+        ...enrollment,
+        totalSegments: segments.length,
+      };
+    })
+  );
+  return coursesWithSegments;
 }

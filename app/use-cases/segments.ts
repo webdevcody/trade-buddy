@@ -1,54 +1,48 @@
-import { Course } from "~/db/schema";
+import {
+  createSegment,
+  deleteSegment,
+  getNextSegment,
+  getPreviousSegment,
+  getSegmentById,
+  getSegmentsByCourseId,
+  updateSegment,
+} from "~/data-access/segments";
+import type { SegmentCreate } from "~/db/schema";
 
-export interface Segment {
-  id: string;
-  title: string;
-  videoUrl: string;
-  content: string;
-  assignments: string[];
+export async function getSegmentsUseCase(courseId: number) {
+  return getSegmentsByCourseId(courseId);
 }
 
-const segments: Segment[] = Array.from({ length: 20 }, (_, i) => {
-  const titles = [
-    "Adding Numbers Up to 10",
-    "Subtracting Numbers Up to 10",
-    "Counting by 2s and 5s",
-    "Introduction to Place Value",
-    "Greater Than and Less Than Value Value Value Value",
-    "Basic Shapes and Patterns",
-    "Adding Three Numbers",
-    "Number Bonds to 10",
-    "Skip Counting to 100",
-    "Telling Time to the Hour",
-    "Measuring with Units",
-    "Introduction to Money",
-    "Adding Numbers Up to 20",
-    "Subtracting Numbers Up to 20",
-    "2D and 3D Shapes",
-    "Simple Word Problems",
-    "Even and Odd Numbers",
-    "Making Groups of Ten",
-    "Number Patterns",
-    "Math Facts Practice",
-  ];
+export async function getSegmentUseCase(id: number) {
+  return getSegmentById(id);
+}
+
+export async function addSegmentUseCase(segment: SegmentCreate) {
+  return createSegment(segment);
+}
+
+export async function editSegmentUseCase(
+  id: number,
+  segment: Partial<SegmentCreate>
+) {
+  return updateSegment(id, segment);
+}
+
+export async function removeSegmentUseCase(id: number) {
+  return deleteSegment(id);
+}
+
+export async function getSegmentNavigationUseCase(
+  courseId: number,
+  currentOrder: number
+) {
+  const [prevSegment, nextSegment] = await Promise.all([
+    getPreviousSegment(courseId, currentOrder),
+    getNextSegment(courseId, currentOrder),
+  ]);
+
   return {
-    id: String(i + 1),
-    title: titles[i],
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    content: `This is the content for ${titles[i]}`,
-    assignments: ["Assignment 1", "Assignment 2"],
-    courseId: "1",
+    prevSegment,
+    nextSegment,
   };
-});
-
-export async function getSegmentsUseCase(courseId: Course["id"]) {
-  return segments;
-}
-
-export async function getSegmentUseCase(segmentId: string) {
-  const segment = segments.find((s) => s.id === segmentId);
-  if (!segment) {
-    throw new Error(`Segment with id ${segmentId} not found`);
-  }
-  return segment;
 }

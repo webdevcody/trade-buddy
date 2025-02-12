@@ -84,6 +84,29 @@ export const courses = tableCreator("course", {
   category: text("category").notNull(),
 });
 
+export const segments = tableCreator("segment", {
+  id: serial("id").primaryKey(),
+  courseId: serial("courseId")
+    .notNull()
+    .references(() => courses.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  order: integer("order").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const coursesRelations = relations(courses, ({ many }) => ({
+  segments: many(segments),
+}));
+
+export const segmentsRelations = relations(segments, ({ one }) => ({
+  course: one(courses, {
+    fields: [segments.courseId],
+    references: [courses.id],
+  }),
+}));
+
 export const courseBookmarks = tableCreator("bookmark", {
   id: serial("id").primaryKey(),
   userId: serial("userId")
@@ -114,3 +137,5 @@ export type Course = typeof courses.$inferSelect;
 export type CourseCreate = typeof courses.$inferInsert;
 export type CourseBookmark = typeof courseBookmarks.$inferSelect;
 export type CourseBookmarkInsert = typeof courseBookmarks.$inferInsert;
+export type Segment = typeof segments.$inferSelect;
+export type SegmentCreate = typeof segments.$inferInsert;

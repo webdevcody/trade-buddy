@@ -6,7 +6,7 @@ import { VideoPlayer } from "./-components/video-player";
 import { Button } from "~/components/ui/button";
 import React from "react";
 import { getSegmentsUseCase } from "~/use-cases/segments";
-import { Bookmark, ChevronRight, GraduationCap } from "lucide-react";
+import { Bookmark, ChevronRight } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Container } from "../-components/container";
 import { Title } from "~/components/title";
@@ -16,6 +16,7 @@ import {
   isBookmarkedUseCase,
   unbookmarkCourseUseCase,
 } from "~/use-cases/bookmarks";
+import { authenticatedMiddleware } from "~/lib/auth";
 
 const getCourseFn = createServerFn()
   .validator(
@@ -47,6 +48,17 @@ const toggleBookmarkFn = createServerFn()
     return !data.isBookmarked;
   });
 
+const getSegmentsFn = createServerFn()
+  .middleware([authenticatedMiddleware])
+  .validator(
+    z.object({
+      courseId: z.number(),
+    })
+  )
+  .handler(async ({ data }) => {
+    return getSegmentsUseCase(data.courseId);
+  });
+
 const getIsBookmarkedFn = createServerFn()
   .validator(
     z.object({
@@ -65,7 +77,9 @@ export const Route = createFileRoute("/courses/$courseId/")({
     const course = await getCourseFn({
       data: { courseId: parseInt(params.courseId) },
     });
-    const segments = await getSegmentsUseCase(course.id);
+    const segments = await getSegmentsFn({
+      data: { courseId: parseInt(params.courseId) },
+    });
     return { course, segments };
   },
 });
@@ -119,7 +133,7 @@ function RouteComponent() {
       </p>
 
       {/* Course Intro Video */}
-      <div className="w-full mx-auto">
+      <div className="w-full mx-auto max-w-4xl">
         <VideoPlayer url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
       </div>
 

@@ -1,4 +1,10 @@
-import { Course, CourseCreate, courses } from "~/db/schema";
+import {
+  Course,
+  courseBookmarks,
+  CourseCreate,
+  courses,
+  User,
+} from "~/db/schema";
 import { and, eq, ilike, or } from "drizzle-orm";
 import { database } from "~/db";
 
@@ -44,4 +50,13 @@ export async function getCourses(options?: GetCoursesOptions) {
   }
 
   return query;
+}
+
+export async function getBookmarkedCourses(userId: User["id"]) {
+  return database.query.courseBookmarks.findMany({
+    where: eq(courseBookmarks.userId, userId),
+    with: {
+      course: true,
+    },
+  });
 }

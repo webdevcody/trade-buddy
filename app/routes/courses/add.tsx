@@ -1,14 +1,12 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Title } from "~/components/title";
 import { AddCourseForm } from "./-components/add-course-form";
 import { Container } from "./-components/container";
-import { assertAuthenticatedFn, isAuthenticatedFn } from "~/fn/auth";
+import { assertAuthenticatedFn } from "~/fn/auth";
 
 export const Route = createFileRoute("/courses/add")({
   component: RouteComponent,
-  loader: async () => {
-    await assertAuthenticatedFn();
-  },
+  beforeLoad: () => assertAuthenticatedFn(),
 });
 
 function RouteComponent() {

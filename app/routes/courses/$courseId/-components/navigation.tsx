@@ -1,9 +1,10 @@
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Segment } from "~/db/schema";
 
 interface NavigationProps {
-  prevSegment: { id: string; title: string; courseId: string } | null;
-  nextSegment: { id: string; title: string; courseId: string } | null;
+  prevSegment: Segment | null;
+  nextSegment: Segment | null;
 }
 
 export function Navigation({ prevSegment, nextSegment }: NavigationProps) {

@@ -16,8 +16,6 @@ import React from "react";
 import { Input } from "~/components/ui/input";
 import { z } from "zod";
 import { useDebounce } from "~/hooks/use-debounce";
-import { validateRequest } from "~/utils/auth";
-import { authenticatedMiddleware } from "~/lib/auth";
 import { isAuthenticatedFn } from "~/fn/auth";
 
 const searchSchema = z.object({

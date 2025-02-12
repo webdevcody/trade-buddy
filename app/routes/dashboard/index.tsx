@@ -1,35 +1,24 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { authenticatedMiddleware } from "~/lib/auth";
-import { getSegmentsUseCase } from "~/use-cases/segments";
 import { Button } from "~/components/ui/button";
 import { ChevronRight, GraduationCap } from "lucide-react";
 import { cn } from "~/lib/utils";
-import { getBookMarkedCoursesUseCase } from "~/use-cases/bookmarks";
-import { assertAuthenticatedFn, isAuthenticatedFn } from "~/fn/auth";
+import { assertAuthenticatedFn } from "~/fn/auth";
+import { getBookmarkedCoursesUseCase } from "~/use-cases/courses";
 
-const getEnrolledCoursesFn = createServerFn()
+const getBookmarkedCoursesFn = createServerFn()
   .middleware([authenticatedMiddleware])
   .handler(async ({ context }) => {
-    const enrolledCourses = await getBookMarkedCoursesUseCase(context.userId);
-    const coursesWithSegments = await Promise.all(
-      enrolledCourses.map(async (enrollment) => {
-        const segments = await getSegmentsUseCase(enrollment.course.id);
-        return {
-          ...enrollment,
-          // enrolledAt: enrollment.enrolledAt.toISOString(),
-          totalSegments: segments.length,
-        };
-      })
-    );
-    return coursesWithSegments;
+    const enrolledCourses = await getBookmarkedCoursesUseCase(context.userId);
+    return enrolledCourses;
   });
 
 export const Route = createFileRoute("/dashboard/")({
   component: RouteComponent,
+  beforeLoad: () => assertAuthenticatedFn(),
   loader: async () => {
-    await assertAuthenticatedFn();
-    const courses = await getEnrolledCoursesFn();
+    const courses = await getBookmarkedCoursesFn();
     return { courses };
   },
 });
@@ -55,14 +44,17 @@ function RouteComponent() {
 
   return (
     <div className="flex-grow p-8">
-      <h1 className="text-2xl font-bold mb-6">Your Learning Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6">Your Courses</h1>
 
       <div className="grid gap-6">
         {courses.map((enrollment) => {
-          const completedCount = 2; // TODO: hard coded for now
-          const progress = Math.round(
-            (completedCount / enrollment.totalSegments) * 100
-          );
+          const completedCount = 0; // TODO: hard coded for now
+          const progress =
+            enrollment.totalSegments === 0
+              ? 100
+              : Math.round(
+                  (completedCount / enrollment.totalSegments ?? 1) * 100
+                );
 
           return (
             <Link
