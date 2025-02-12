@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
 import { Title } from "~/components/title";
-import { Container } from "../-components/container";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -16,13 +15,13 @@ import {
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
-import { authenticatedMiddleware } from "~/lib/auth";
+import { authenticatedMiddleware, isCourseAdminMiddleware } from "~/lib/auth";
 import { isCourseAdminUseCase } from "~/use-cases/courses";
-import { validateRequest } from "~/utils/auth";
-import { addSegmentUseCase } from "~/use-cases/segments";
+import { getSegmentUseCase, updateSegmentUseCase } from "~/use-cases/segments";
 import { assertAuthenticatedFn } from "~/fn/auth";
 import { ChevronLeft } from "lucide-react";
-import { getSegmentsByCourseId } from "~/data-access/segments";
+import { getSegmentById } from "~/data-access/segments";
+import { Container } from "~/routes/courses/-components/container";
 
 const formSchema = z.object({
   title: z
@@ -32,41 +31,57 @@ const formSchema = z.object({
   content: z.string().min(10, "Content must be at least 10 characters"),
 });
 
-const createSegmentFn = createServerFn()
+const updateSegmentFn = createServerFn()
   .middleware([authenticatedMiddleware])
   .validator(
     z.object({
-      courseId: z.number(),
+      segmentId: z.number(),
       data: formSchema,
     })
   )
   .handler(async ({ data, context }) => {
-    const isAdmin = await isCourseAdminUseCase(context.userId, data.courseId);
+    const segment = await getSegmentUseCase(data.segmentId);
+    if (!segment) throw new Error("Segment not found");
+
+    const isAdmin = await isCourseAdminUseCase(
+      context.userId,
+      segment.courseId
+    );
     if (!isAdmin) throw new Error("Not authorized");
 
-    // Get all segments to determine the next order number
-    const segments = await getSegmentsByCourseId(data.courseId);
-    const maxOrder = segments.reduce(
-      (max, segment) => Math.max(max, segment.order),
-      -1
-    );
-    const nextOrder = maxOrder + 1;
+    console.log("updating segment");
+    return await updateSegmentUseCase(data.segmentId, data.data);
+  });
 
-    const segment = await addSegmentUseCase({
-      courseId: data.courseId,
-      title: data.data.title,
-      content: data.data.content,
-      order: nextOrder,
-    });
+const loaderFn = createServerFn()
+  .middleware([authenticatedMiddleware])
+  .validator(z.object({ segmentId: z.number() }))
+  .handler(async ({ data, context }) => {
+    const segment = await getSegmentUseCase(data.segmentId);
+    if (!segment) throw new Error("Segment not found");
+
+    const isAdmin = await isCourseAdminUseCase(
+      context.userId,
+      segment.courseId
+    );
+    if (!isAdmin) throw new Error("Not authorized");
 
     return segment;
   });
 
-export const Route = createFileRoute("/courses/$courseId/segments/add")({
+export const Route = createFileRoute(
+  "/courses/$courseId/segments/$segmentId/edit"
+)({
   component: RouteComponent,
   beforeLoad: () => assertAuthenticatedFn(),
   loader: async ({ params, context }) => {
-    return false;
+    const segment = await loaderFn({
+      data: {
+        segmentId: parseInt(params.segmentId),
+      },
+    });
+
+    return segment;
   },
 });
 
@@ -74,34 +89,38 @@ function RouteComponent() {
   const params = Route.useParams();
   const navigate = useNavigate();
   const courseId = parseInt(params.courseId);
+  const segmentId = parseInt(params.segmentId);
+  const segment = Route.useLoaderData();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      content: "",
+      title: segment.title,
+      content: segment.content,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const segment = await createSegmentFn({
+      await updateSegmentFn({
         data: {
-          courseId,
+          segmentId,
           data: values,
         },
       });
 
-      // Navigate to the new segment
+      console.log("segment updated");
+
+      // Navigate back to the segment
       navigate({
         to: "/courses/$courseId/segments/$segmentId",
         params: {
           courseId: courseId.toString(),
-          segmentId: segment.id.toString(),
+          segmentId: segmentId.toString(),
         },
       });
     } catch (error) {
-      console.error("Failed to create segment:", error);
+      console.error("Failed to update segment:", error);
       // TODO: Show error toast
     }
   };
@@ -124,7 +143,7 @@ function RouteComponent() {
         </Button>
       </div>
 
-      <Title title="Add New Segment" />
+      <Title title="Edit Segment" />
 
       <div className="max-w-2xl">
         <Form {...form}>
@@ -162,7 +181,7 @@ function RouteComponent() {
             />
 
             <div className="flex justify-end">
-              <Button type="submit">Create Segment</Button>
+              <Button type="submit">Update Segment</Button>
             </div>
           </form>
         </Form>

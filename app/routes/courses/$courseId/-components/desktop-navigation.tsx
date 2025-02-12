@@ -8,12 +8,7 @@ import {
   Sidebar,
   SidebarContent,
 } from "~/components/ui/sidebar";
-import { Course } from "~/db/schema";
-
-interface Segment {
-  id: string;
-  title: string;
-}
+import { Course, Segment } from "~/db/schema";
 
 interface DesktopNavigationProps {
   segments: Segment[];

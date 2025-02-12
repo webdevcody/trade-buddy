@@ -7,14 +7,14 @@ import {
   getSegmentsByCourseId,
   updateSegment,
 } from "~/data-access/segments";
-import type { SegmentCreate } from "~/db/schema";
+import type { Segment, SegmentCreate } from "~/db/schema";
 
 export async function getSegmentsUseCase(courseId: number) {
   return getSegmentsByCourseId(courseId);
 }
 
-export async function getSegmentUseCase(id: number) {
-  return getSegmentById(id);
+export async function getSegmentUseCase(segmentId: Segment["id"]) {
+  return getSegmentById(segmentId);
 }
 
 export async function addSegmentUseCase(segment: SegmentCreate) {
@@ -45,4 +45,18 @@ export async function getSegmentNavigationUseCase(
     prevSegment,
     nextSegment,
   };
+}
+
+export async function updateSegmentUseCase(
+  segmentId: number,
+  data: {
+    title: string;
+    content: string;
+  }
+) {
+  return await updateSegment(segmentId, data);
+}
+
+export async function deleteSegmentUseCase(id: number) {
+  return deleteSegment(id);
 }

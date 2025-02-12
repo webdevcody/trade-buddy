@@ -5,7 +5,7 @@ import { Segment } from "~/db/schema";
 
 interface MobileNavigationProps {
   segments: Segment[];
-  currentSegmentId: string;
+  currentSegmentId: Segment["id"];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -40,7 +40,7 @@ export function MobileNavigation({
               key={segment.id}
               href={`/courses/${segment.courseId}/segments/${segment.id}`}
               className={`flex items-center gap-6 p-4 hover:bg-accent/50 transition-colors ${
-                segment.id.toString() === currentSegmentId ? "bg-accent/50" : ""
+                segment.id === currentSegmentId ? "bg-accent/50" : ""
               }`}
             >
               <div className="flex-shrink-0 size-10 flex items-center justify-center rounded-full bg-background border text-lg font-medium">

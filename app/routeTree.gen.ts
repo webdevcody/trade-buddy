@@ -23,8 +23,9 @@ import { Route as CoursesAddImport } from './routes/courses/add'
 import { Route as DashboardExerciseIndexImport } from './routes/dashboard/exercise.index'
 import { Route as CoursesCourseIdIndexImport } from './routes/courses/$courseId/index'
 import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise.add'
-import { Route as CoursesCourseIdSegmentsAddImport } from './routes/courses/$courseId/segments.add'
-import { Route as CoursesCourseIdSegmentsSegmentIdImport } from './routes/courses/$courseId/segments.$segmentId'
+import { Route as CoursesCourseIdSegmentsAddImport } from './routes/courses/$courseId/segments/add'
+import { Route as CoursesCourseIdSegmentsSegmentIdIndexImport } from './routes/courses/$courseId/segments/$segmentId/index'
+import { Route as CoursesCourseIdSegmentsSegmentIdEditImport } from './routes/courses/$courseId/segments/$segmentId/edit'
 
 // Create/Update Routes
 
@@ -108,10 +109,17 @@ const CoursesCourseIdSegmentsAddRoute = CoursesCourseIdSegmentsAddImport.update(
   } as any,
 )
 
-const CoursesCourseIdSegmentsSegmentIdRoute =
-  CoursesCourseIdSegmentsSegmentIdImport.update({
-    id: '/courses/$courseId/segments/$segmentId',
-    path: '/courses/$courseId/segments/$segmentId',
+const CoursesCourseIdSegmentsSegmentIdIndexRoute =
+  CoursesCourseIdSegmentsSegmentIdIndexImport.update({
+    id: '/courses/$courseId/segments/$segmentId/',
+    path: '/courses/$courseId/segments/$segmentId/',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const CoursesCourseIdSegmentsSegmentIdEditRoute =
+  CoursesCourseIdSegmentsSegmentIdEditImport.update({
+    id: '/courses/$courseId/segments/$segmentId/edit',
+    path: '/courses/$courseId/segments/$segmentId/edit',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -203,18 +211,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardExerciseIndexImport
       parentRoute: typeof DashboardRouteImport
     }
-    '/courses/$courseId/segments/$segmentId': {
-      id: '/courses/$courseId/segments/$segmentId'
-      path: '/courses/$courseId/segments/$segmentId'
-      fullPath: '/courses/$courseId/segments/$segmentId'
-      preLoaderRoute: typeof CoursesCourseIdSegmentsSegmentIdImport
-      parentRoute: typeof rootRoute
-    }
     '/courses/$courseId/segments/add': {
       id: '/courses/$courseId/segments/add'
       path: '/courses/$courseId/segments/add'
       fullPath: '/courses/$courseId/segments/add'
       preLoaderRoute: typeof CoursesCourseIdSegmentsAddImport
+      parentRoute: typeof rootRoute
+    }
+    '/courses/$courseId/segments/$segmentId/edit': {
+      id: '/courses/$courseId/segments/$segmentId/edit'
+      path: '/courses/$courseId/segments/$segmentId/edit'
+      fullPath: '/courses/$courseId/segments/$segmentId/edit'
+      preLoaderRoute: typeof CoursesCourseIdSegmentsSegmentIdEditImport
+      parentRoute: typeof rootRoute
+    }
+    '/courses/$courseId/segments/$segmentId/': {
+      id: '/courses/$courseId/segments/$segmentId/'
+      path: '/courses/$courseId/segments/$segmentId'
+      fullPath: '/courses/$courseId/segments/$segmentId'
+      preLoaderRoute: typeof CoursesCourseIdSegmentsSegmentIdIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -253,8 +268,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
-  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
   '/courses/$courseId/segments/add': typeof CoursesCourseIdSegmentsAddRoute
+  '/courses/$courseId/segments/$segmentId/edit': typeof CoursesCourseIdSegmentsSegmentIdEditRoute
+  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -269,8 +285,9 @@ export interface FileRoutesByTo {
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
-  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
   '/courses/$courseId/segments/add': typeof CoursesCourseIdSegmentsAddRoute
+  '/courses/$courseId/segments/$segmentId/edit': typeof CoursesCourseIdSegmentsSegmentIdEditRoute
+  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdIndexRoute
 }
 
 export interface FileRoutesById {
@@ -287,8 +304,9 @@ export interface FileRoutesById {
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise/': typeof DashboardExerciseIndexRoute
-  '/courses/$courseId/segments/$segmentId': typeof CoursesCourseIdSegmentsSegmentIdRoute
   '/courses/$courseId/segments/add': typeof CoursesCourseIdSegmentsAddRoute
+  '/courses/$courseId/segments/$segmentId/edit': typeof CoursesCourseIdSegmentsSegmentIdEditRoute
+  '/courses/$courseId/segments/$segmentId/': typeof CoursesCourseIdSegmentsSegmentIdIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -306,8 +324,9 @@ export interface FileRouteTypes {
     | '/dashboard/exercise/add'
     | '/courses/$courseId'
     | '/dashboard/exercise'
-    | '/courses/$courseId/segments/$segmentId'
     | '/courses/$courseId/segments/add'
+    | '/courses/$courseId/segments/$segmentId/edit'
+    | '/courses/$courseId/segments/$segmentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -321,8 +340,9 @@ export interface FileRouteTypes {
     | '/dashboard/exercise/add'
     | '/courses/$courseId'
     | '/dashboard/exercise'
-    | '/courses/$courseId/segments/$segmentId'
     | '/courses/$courseId/segments/add'
+    | '/courses/$courseId/segments/$segmentId/edit'
+    | '/courses/$courseId/segments/$segmentId'
   id:
     | '__root__'
     | '/'
@@ -337,8 +357,9 @@ export interface FileRouteTypes {
     | '/dashboard/exercise/add'
     | '/courses/$courseId/'
     | '/dashboard/exercise/'
-    | '/courses/$courseId/segments/$segmentId'
     | '/courses/$courseId/segments/add'
+    | '/courses/$courseId/segments/$segmentId/edit'
+    | '/courses/$courseId/segments/$segmentId/'
   fileRoutesById: FileRoutesById
 }
 
@@ -351,8 +372,9 @@ export interface RootRouteChildren {
   CoursesAddRoute: typeof CoursesAddRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
   CoursesCourseIdIndexRoute: typeof CoursesCourseIdIndexRoute
-  CoursesCourseIdSegmentsSegmentIdRoute: typeof CoursesCourseIdSegmentsSegmentIdRoute
   CoursesCourseIdSegmentsAddRoute: typeof CoursesCourseIdSegmentsAddRoute
+  CoursesCourseIdSegmentsSegmentIdEditRoute: typeof CoursesCourseIdSegmentsSegmentIdEditRoute
+  CoursesCourseIdSegmentsSegmentIdIndexRoute: typeof CoursesCourseIdSegmentsSegmentIdIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -364,8 +386,11 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesAddRoute: CoursesAddRoute,
   CoursesIndexRoute: CoursesIndexRoute,
   CoursesCourseIdIndexRoute: CoursesCourseIdIndexRoute,
-  CoursesCourseIdSegmentsSegmentIdRoute: CoursesCourseIdSegmentsSegmentIdRoute,
   CoursesCourseIdSegmentsAddRoute: CoursesCourseIdSegmentsAddRoute,
+  CoursesCourseIdSegmentsSegmentIdEditRoute:
+    CoursesCourseIdSegmentsSegmentIdEditRoute,
+  CoursesCourseIdSegmentsSegmentIdIndexRoute:
+    CoursesCourseIdSegmentsSegmentIdIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -386,8 +411,9 @@ export const routeTree = rootRoute
         "/courses/add",
         "/courses/",
         "/courses/$courseId/",
-        "/courses/$courseId/segments/$segmentId",
-        "/courses/$courseId/segments/add"
+        "/courses/$courseId/segments/add",
+        "/courses/$courseId/segments/$segmentId/edit",
+        "/courses/$courseId/segments/$segmentId/"
       ]
     },
     "/": {
@@ -436,11 +462,14 @@ export const routeTree = rootRoute
       "filePath": "dashboard/exercise.index.tsx",
       "parent": "/dashboard"
     },
-    "/courses/$courseId/segments/$segmentId": {
-      "filePath": "courses/$courseId/segments.$segmentId.tsx"
-    },
     "/courses/$courseId/segments/add": {
-      "filePath": "courses/$courseId/segments.add.tsx"
+      "filePath": "courses/$courseId/segments/add.tsx"
+    },
+    "/courses/$courseId/segments/$segmentId/edit": {
+      "filePath": "courses/$courseId/segments/$segmentId/edit.tsx"
+    },
+    "/courses/$courseId/segments/$segmentId/": {
+      "filePath": "courses/$courseId/segments/$segmentId/index.tsx"
     }
   }
 }

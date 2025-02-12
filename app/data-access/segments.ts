@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { database } from "~/db";
-import { segments, type SegmentCreate } from "~/db/schema";
+import { Segment, segments, type SegmentCreate } from "~/db/schema";
 
 export async function getSegmentsByCourseId(courseId: number) {
   return database.query.segments.findMany({
@@ -24,15 +24,18 @@ export async function createSegment(segment: SegmentCreate) {
 }
 
 export async function updateSegment(
-  id: number,
-  segment: Partial<SegmentCreate>
+  id: Segment["id"],
+  data: {
+    title: string;
+    content: string;
+  }
 ) {
-  const [updatedSegment] = await database
+  console.log("updating segment");
+  return await database
     .update(segments)
-    .set({ ...segment, updatedAt: new Date() })
+    .set({ ...data, updatedAt: new Date() })
     .where(eq(segments.id, id))
     .returning();
-  return updatedSegment;
 }
 
 export async function deleteSegment(id: number) {
