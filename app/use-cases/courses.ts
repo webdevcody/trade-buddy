@@ -8,6 +8,7 @@ import {
 } from "~/data-access/courses";
 import { getSegmentsByCourseId } from "~/data-access/segments";
 import { Course, CourseCreate, CourseUpdate, User } from "~/db/schema";
+import { deleteFile } from "~/storage";
 
 export function createCourseUseCase(userId: User["id"], course: CourseCreate) {
   return createCourse({ ...course, userId });
@@ -51,6 +52,10 @@ export async function updateCourseUseCase(
   const course = await getCourse(courseId);
   if (!course) throw new Error("Course not found");
   if (course.userId !== userId) throw new Error("Not authorized");
+
+  if (course.videoKey && data.videoKey) {
+    await deleteFile(course.videoKey);
+  }
 
   return updateCourse(courseId, data);
 }

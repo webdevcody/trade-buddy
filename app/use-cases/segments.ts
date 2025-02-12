@@ -8,6 +8,7 @@ import {
   updateSegment,
 } from "~/data-access/segments";
 import type { Segment, SegmentCreate } from "~/db/schema";
+import { deleteFile } from "~/storage";
 
 export async function getSegmentsUseCase(courseId: number) {
   return getSegmentsByCourseId(courseId);
@@ -56,6 +57,14 @@ export async function updateSegmentUseCase(
   }
 ) {
   const { title, content, videoKey } = data;
+
+  const segment = await getSegmentById(segmentId);
+  if (!segment) throw new Error("Segment not found");
+
+  if (segment.videoKey && videoKey) {
+    await deleteFile(segment.videoKey);
+  }
+
   return await updateSegment(segmentId, { title, content, videoKey });
 }
 
