@@ -6,7 +6,7 @@ import { getCourseUseCase, isCourseAdminUseCase } from "~/use-cases/courses";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Edit, Menu, Trash2 } from "lucide-react";
 import React from "react";
-import { getSegmentUseCase } from "~/use-cases/segments";
+import { getSegmentUseCase, deleteSegmentUseCase } from "~/use-cases/segments";
 import {
   createAttachment,
   deleteAttachment,
@@ -29,7 +29,21 @@ import { useToast } from "~/hooks/use-toast";
 import { useRouter } from "@tanstack/react-router";
 import { authenticatedMiddleware } from "~/lib/auth";
 import { generateRandomUUID } from "~/utils/uuid";
-import { deleteAttachmentUseCase } from "~/use-cases/attachments";
+import {
+  createAttachmentUseCase,
+  deleteAttachmentUseCase,
+} from "~/use-cases/attachments";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 
 const getSegmentInfoFn = createServerFn()
   .validator(
@@ -117,6 +131,7 @@ function FileDropzone({
 }
 
 const uploadAttachmentFn = createServerFn()
+  .middleware([authenticatedMiddleware])
   .validator(
     z.object({
       segmentId: z.number(),
@@ -124,15 +139,8 @@ const uploadAttachmentFn = createServerFn()
       fileKey: z.string(),
     })
   )
-  .handler(async ({ data }) => {
-    const { user } = await validateRequest();
-    if (!user) {
-      throw redirect({
-        to: "/unauthenticated",
-      });
-    }
-
-    return await createAttachment({
+  .handler(async ({ data, context }) => {
+    return await createAttachmentUseCase(context.userId, {
       segmentId: data.segmentId,
       fileName: data.fileName,
       fileKey: data.fileKey,
@@ -146,8 +154,19 @@ const deleteAttachmentFn = createServerFn()
       attachmentId: z.number(),
     })
   )
-  .handler(async ({ data }) => {
-    await deleteAttachmentUseCase(data.attachmentId);
+  .handler(async ({ data, context }) => {
+    await deleteAttachmentUseCase(context.userId, data.attachmentId);
+  });
+
+const deleteSegmentFn = createServerFn()
+  .middleware([authenticatedMiddleware])
+  .validator(
+    z.object({
+      segmentId: z.number(),
+    })
+  )
+  .handler(async ({ data, context }) => {
+    await deleteSegmentUseCase(context.userId, data.segmentId);
   });
 
 function ViewSegment({
@@ -238,6 +257,31 @@ function ViewSegment({
     }
   };
 
+  const handleDeleteSegment = async () => {
+    try {
+      await deleteSegmentFn({
+        data: {
+          segmentId: currentSegmentId,
+        },
+      });
+      toast({
+        title: "Segment deleted successfully!",
+        description: "You will be redirected to the course page.",
+      });
+      router.navigate({
+        to: "/courses/$courseId",
+        params: { courseId: course.id.toString() },
+      });
+    } catch (error) {
+      console.error("Failed to delete segment:", error);
+      toast({
+        title: "Failed to delete segment",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex w-full">
       {/* Desktop Navigation */}
@@ -276,16 +320,46 @@ function ViewSegment({
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold">{currentSegment.title}</h1>
               {isAdmin && (
-                <Link
-                  to="/courses/$courseId/segments/$segmentId/edit"
-                  params={{
-                    courseId: course.id.toString(),
-                    segmentId: currentSegment.id.toString(),
-                  }}
-                  className={buttonVariants({ variant: "outline" })}
-                >
-                  <Edit /> Edit Segment
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    to="/courses/$courseId/segments/$segmentId/edit"
+                    params={{
+                      courseId: course.id.toString(),
+                      segmentId: currentSegment.id.toString(),
+                    }}
+                    className={buttonVariants({ variant: "outline" })}
+                  >
+                    <Edit className="mr-2 h-4 w-4" /> Edit Segment
+                  </Link>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete Segment
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are you absolutely sure?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete this segment and all its associated files and
+                          attachments.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteSegment}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               )}
             </div>
 

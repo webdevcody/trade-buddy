@@ -1,3 +1,4 @@
+import { getCourse } from "~/data-access/courses";
 import {
   createSegment,
   deleteSegment,
@@ -6,9 +7,25 @@ import {
   getSegmentById,
   getSegmentsByCourseId,
   updateSegment,
+  getSegmentAttachments,
+  deleteAttachment,
 } from "~/data-access/segments";
-import type { Segment, SegmentCreate } from "~/db/schema";
+import type { Segment, SegmentCreate, User } from "~/db/schema";
 import { deleteFile } from "~/storage";
+
+export async function assertAccessToSegment(
+  userId: User["id"],
+  segmentId: number
+) {
+  const segment = await getSegmentById(segmentId);
+  if (!segment) throw new Error("Segment not found");
+  const course = await getCourse(segment.courseId);
+  if (!course) throw new Error("Course not found");
+  if (course.userId !== userId) {
+    throw new Error("You are not allowed to delete this segment");
+  }
+  return segment;
+}
 
 export async function getSegmentsUseCase(courseId: number) {
   return getSegmentsByCourseId(courseId);
@@ -68,6 +85,26 @@ export async function updateSegmentUseCase(
   return await updateSegment(segmentId, { title, content, videoKey });
 }
 
-export async function deleteSegmentUseCase(id: number) {
-  return deleteSegment(id);
+export async function deleteSegmentUseCase(
+  userId: User["id"],
+  segmentId: number
+) {
+  const segment = await assertAccessToSegment(userId, segmentId);
+
+  // Delete video file if it exists
+  if (segment.videoKey) {
+    await deleteFile(segment.videoKey);
+  }
+
+  // Get and delete all attachment files
+  const attachments = await getSegmentAttachments(segmentId);
+  await Promise.all(
+    attachments.map(async (attachment) => {
+      await deleteFile(attachment.fileKey);
+      await deleteAttachment(attachment.id);
+    })
+  );
+
+  // Finally delete the segment (this will cascade delete attachments due to foreign key)
+  return deleteSegment(segmentId);
 }
