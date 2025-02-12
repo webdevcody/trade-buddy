@@ -81,7 +81,9 @@ export const courses = tableCreator("course", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
+  description: text("description").notNull(),
   category: text("category").notNull(),
+  videoKey: text("videoKey"),
 });
 
 export const segments = tableCreator("segment", {
@@ -135,6 +137,7 @@ export type Exercise = typeof exercises.$inferSelect;
 export type ExerciseCreate = typeof exercises.$inferInsert;
 export type Course = typeof courses.$inferSelect;
 export type CourseCreate = typeof courses.$inferInsert;
+export type CourseUpdate = Partial<typeof courses.$inferInsert>;
 export type CourseBookmark = typeof courseBookmarks.$inferSelect;
 export type CourseBookmarkInsert = typeof courseBookmarks.$inferInsert;
 export type Segment = typeof segments.$inferSelect;

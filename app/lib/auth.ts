@@ -22,6 +22,16 @@ export const authenticatedMiddleware = createMiddleware().server(
   }
 );
 
+export const userIdMiddleware = createMiddleware().server(async ({ next }) => {
+  const { user } = await validateRequest();
+
+  return next({
+    context: {
+      userId: user?.id,
+    },
+  });
+});
+
 export const isCourseAdminMiddleware = createMiddleware()
   .validator(z.object({ courseId: z.number() }))
   .server(async ({ next, data }) => {

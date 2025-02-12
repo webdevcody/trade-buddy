@@ -47,7 +47,7 @@ export function CourseSegments({
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="text-sm font-medium px-2 py-2 text-muted-foreground">
-        Course Segments
+        Sections
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu className="space-y-1">

@@ -49,6 +49,7 @@ async function seed() {
       userId: user.id,
       title: "Introduction to TypeScript",
       category: "Programming",
+      description: "Learn the basics of TypeScript",
     })
     .returning();
 

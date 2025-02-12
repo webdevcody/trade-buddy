@@ -3,8 +3,8 @@ import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
 import { SidebarProvider, useSidebar } from "~/components/ui/sidebar";
 import { getCourseUseCase, isCourseAdminUseCase } from "~/use-cases/courses";
-import { Button } from "~/components/ui/button";
-import { Menu } from "lucide-react";
+import { Button, buttonVariants } from "~/components/ui/button";
+import { Edit, Menu } from "lucide-react";
 import React from "react";
 import { getSegmentUseCase } from "~/use-cases/segments";
 import { getSegmentsByCourseId } from "~/data-access/segments";
@@ -60,24 +60,6 @@ export const Route = createFileRoute("/courses/$courseId/segments/$segmentId/")(
     },
   }
 );
-
-function EditSegment({ segment }: { segment: Segment }) {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Edit Segment: {segment.title}</h1>
-        <Link
-          to="."
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-        >
-          Cancel
-        </Link>
-      </div>
-      {/* TODO: Add edit form */}
-      <div className="text-gray-500">Edit form will be added here</div>
-    </div>
-  );
-}
 
 function ViewSegment({
   course,
@@ -152,9 +134,9 @@ function ViewSegment({
                     courseId: course.id.toString(),
                     segmentId: currentSegment.id.toString(),
                   }}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  className={buttonVariants({ variant: "outline" })}
                 >
-                  Edit Segment
+                  <Edit /> Edit Segment
                 </Link>
               )}
             </div>

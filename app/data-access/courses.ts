@@ -3,6 +3,7 @@ import {
   courseBookmarks,
   CourseCreate,
   courses,
+  CourseUpdate,
   User,
 } from "~/db/schema";
 import { and, eq, ilike, or } from "drizzle-orm";
@@ -59,4 +60,13 @@ export async function getBookmarkedCourses(userId: User["id"]) {
       course: true,
     },
   });
+}
+
+export async function updateCourse(courseId: Course["id"], data: CourseUpdate) {
+  const updated = await database
+    .update(courses)
+    .set(data)
+    .where(eq(courses.id, courseId))
+    .returning();
+  return updated[0];
 }

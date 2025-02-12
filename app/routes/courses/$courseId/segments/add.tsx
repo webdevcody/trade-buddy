@@ -1,10 +1,9 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/start'
-import { z } from 'zod'
-import { Title } from '~/components/title'
-import { Container } from '../-components/container'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/start";
+import { z } from "zod";
+import { Title } from "~/components/title";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -12,25 +11,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '~/components/ui/form'
-import { Input } from '~/components/ui/input'
-import { Button } from '~/components/ui/button'
-import { Textarea } from '~/components/ui/textarea'
-import { authenticatedMiddleware } from '~/lib/auth'
-import { isCourseAdminUseCase } from '~/use-cases/courses'
-import { validateRequest } from '~/utils/auth'
-import { addSegmentUseCase } from '~/use-cases/segments'
-import { assertAuthenticatedFn } from '~/fn/auth'
-import { ChevronLeft } from 'lucide-react'
-import { getSegmentsByCourseId } from '~/data-access/segments'
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { Textarea } from "~/components/ui/textarea";
+import { authenticatedMiddleware } from "~/lib/auth";
+import { isCourseAdminUseCase } from "~/use-cases/courses";
+import { validateRequest } from "~/utils/auth";
+import { addSegmentUseCase } from "~/use-cases/segments";
+import { assertAuthenticatedFn } from "~/fn/auth";
+import { ChevronLeft } from "lucide-react";
+import { getSegmentsByCourseId } from "~/data-access/segments";
+import { Container } from "../../-components/container";
 
 const formSchema = z.object({
   title: z
     .string()
-    .min(2, 'Title must be at least 2 characters')
-    .max(100, 'Title must be less than 100 characters'),
-  content: z.string().min(10, 'Content must be at least 10 characters'),
-})
+    .min(2, "Title must be at least 2 characters")
+    .max(100, "Title must be less than 100 characters"),
+  content: z.string().min(10, "Content must be at least 10 characters"),
+});
 
 const createSegmentFn = createServerFn()
   .middleware([authenticatedMiddleware])
@@ -38,50 +38,50 @@ const createSegmentFn = createServerFn()
     z.object({
       courseId: z.number(),
       data: formSchema,
-    }),
+    })
   )
   .handler(async ({ data, context }) => {
-    const isAdmin = await isCourseAdminUseCase(context.userId, data.courseId)
-    if (!isAdmin) throw new Error('Not authorized')
+    const isAdmin = await isCourseAdminUseCase(context.userId, data.courseId);
+    if (!isAdmin) throw new Error("Not authorized");
 
     // Get all segments to determine the next order number
-    const segments = await getSegmentsByCourseId(data.courseId)
+    const segments = await getSegmentsByCourseId(data.courseId);
     const maxOrder = segments.reduce(
       (max, segment) => Math.max(max, segment.order),
-      -1,
-    )
-    const nextOrder = maxOrder + 1
+      -1
+    );
+    const nextOrder = maxOrder + 1;
 
     const segment = await addSegmentUseCase({
       courseId: data.courseId,
       title: data.data.title,
       content: data.data.content,
       order: nextOrder,
-    })
+    });
 
-    return segment
-  })
+    return segment;
+  });
 
-export const Route = createFileRoute('/courses/$courseId/segments/add')({
+export const Route = createFileRoute("/courses/$courseId/segments/add")({
   component: RouteComponent,
   beforeLoad: () => assertAuthenticatedFn(),
   loader: async ({ params, context }) => {
-    return false
+    return false;
   },
-})
+});
 
 function RouteComponent() {
-  const params = Route.useParams()
-  const navigate = useNavigate()
-  const courseId = parseInt(params.courseId)
+  const params = Route.useParams();
+  const navigate = useNavigate();
+  const courseId = parseInt(params.courseId);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: '',
-      content: '',
+      title: "",
+      content: "",
     },
-  })
+  });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -90,30 +90,30 @@ function RouteComponent() {
           courseId,
           data: values,
         },
-      })
+      });
 
       // Navigate to the new segment
       navigate({
-        to: '/courses/$courseId/segments/$segmentId',
+        to: "/courses/$courseId/segments/$segmentId",
         params: {
           courseId: courseId.toString(),
           segmentId: segment.id.toString(),
         },
-      })
+      });
     } catch (error) {
-      console.error('Failed to create segment:', error)
+      console.error("Failed to create segment:", error);
       // TODO: Show error toast
     }
-  }
+  };
 
   return (
     <Container>
-      <div className="mb-6">
+      <div>
         <Button
-          variant="ghost"
+          variant="secondary"
           onClick={() =>
             navigate({
-              to: '/courses/$courseId',
+              to: "/courses/$courseId",
               params: { courseId: courseId.toString() },
             })
           }
@@ -168,5 +168,5 @@ function RouteComponent() {
         </Form>
       </div>
     </Container>
-  )
+  );
 }

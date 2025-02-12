@@ -10,9 +10,9 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import { createServerFn } from "@tanstack/start";
-import { createExerciseUseCase } from "~/use-cases/exercises";
 import { authenticatedMiddleware } from "~/lib/auth";
 import { createCourseUseCase } from "~/use-cases/courses";
 import { useNavigate } from "@tanstack/react-router";
@@ -20,6 +20,7 @@ import { useNavigate } from "@tanstack/react-router";
 const formSchema = z.object({
   title: z.string().min(2).max(50),
   category: z.string().min(2).max(50),
+  description: z.string().min(10),
 });
 
 const createCourseFn = createServerFn()
@@ -37,6 +38,7 @@ export function AddCourseForm() {
     defaultValues: {
       title: "",
       category: "",
+      description: "",
     },
   });
 
@@ -47,7 +49,7 @@ export function AddCourseForm() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 max-w-2xl">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -78,7 +80,27 @@ export function AddCourseForm() {
             )}
           />
 
-          <Button type="submit">Create Course</Button>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Course description..."
+                    className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex justify-end">
+            <Button type="submit">Create Course</Button>
+          </div>
         </form>
       </Form>
     </div>

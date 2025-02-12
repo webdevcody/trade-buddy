@@ -4,9 +4,10 @@ import {
   getCourse,
   getCourses,
   GetCoursesOptions,
+  updateCourse,
 } from "~/data-access/courses";
 import { getSegmentsByCourseId } from "~/data-access/segments";
-import { Course, CourseCreate, User } from "~/db/schema";
+import { Course, CourseCreate, CourseUpdate, User } from "~/db/schema";
 
 export function createCourseUseCase(userId: User["id"], course: CourseCreate) {
   return createCourse({ ...course, userId });
@@ -40,4 +41,16 @@ export async function getBookmarkedCoursesUseCase(userId: User["id"]) {
     })
   );
   return coursesWithSegments;
+}
+
+export async function updateCourseUseCase(
+  courseId: Course["id"],
+  userId: User["id"],
+  data: CourseUpdate
+) {
+  const course = await getCourse(courseId);
+  if (!course) throw new Error("Course not found");
+  if (course.userId !== userId) throw new Error("Not authorized");
+
+  return updateCourse(courseId, data);
 }

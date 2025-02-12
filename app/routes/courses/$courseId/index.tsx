@@ -3,108 +3,78 @@ import { createServerFn } from "@tanstack/start";
 import { z } from "zod";
 import { getCourseUseCase, isCourseAdminUseCase } from "~/use-cases/courses";
 import { VideoPlayer } from "./-components/video-player";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import React from "react";
 import { getSegmentsUseCase } from "~/use-cases/segments";
-import { Bookmark, ChevronRight, Plus } from "lucide-react";
+import { Bookmark, ChevronRight, Edit, Lightbulb, Plus } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Container } from "../-components/container";
 import { Title } from "~/components/title";
-import { validateRequest } from "~/utils/auth";
 import {
   bookmarkCourseUseCase,
   isBookmarkedUseCase,
   unbookmarkCourseUseCase,
 } from "~/use-cases/bookmarks";
-import { authenticatedMiddleware } from "~/lib/auth";
-
-const getCourseFn = createServerFn()
-  .validator(
-    z.object({
-      courseId: z.coerce.number(),
-    })
-  )
-  .handler(async ({ data }) => {
-    const course = await getCourseUseCase(data.courseId);
-    return course;
-  });
+import { authenticatedMiddleware, userIdMiddleware } from "~/lib/auth";
+import ReactMarkdown from "react-markdown";
+import { getStorageUrl } from "~/utils/storage";
 
 const toggleBookmarkFn = createServerFn()
+  .middleware([authenticatedMiddleware])
   .validator(
     z.object({
       courseId: z.number(),
       isBookmarked: z.boolean(),
     })
   )
-  .handler(async ({ data }) => {
-    const { user } = await validateRequest();
-    if (!user) throw new Error("Not authenticated");
-
-    if (data.isBookmarked) {
-      await unbookmarkCourseUseCase(user.id, data.courseId);
-    } else {
-      await bookmarkCourseUseCase(user.id, data.courseId);
-    }
+  .handler(async ({ data, context }) => {
+    data.isBookmarked
+      ? await unbookmarkCourseUseCase(context.userId, data.courseId)
+      : await bookmarkCourseUseCase(context.userId, data.courseId);
     return !data.isBookmarked;
   });
 
-const getSegmentsFn = createServerFn()
-  .middleware([authenticatedMiddleware])
+const loaderFn = createServerFn()
+  .middleware([userIdMiddleware])
   .validator(
     z.object({
       courseId: z.number(),
     })
   )
-  .handler(async ({ data }) => {
-    return getSegmentsUseCase(data.courseId);
-  });
-
-const getIsBookmarkedFn = createServerFn()
-  .validator(
-    z.object({
-      courseId: z.number(),
-    })
-  )
-  .handler(async ({ data }) => {
-    const { user } = await validateRequest();
-    if (!user) return false;
-    return isBookmarkedUseCase(user.id, data.courseId);
-  });
-
-const getIsAdminFn = createServerFn()
-  .validator(
-    z.object({
-      courseId: z.number(),
-    })
-  )
-  .handler(async ({ data }) => {
-    const { user } = await validateRequest();
-    if (!user) return false;
-    return isCourseAdminUseCase(user.id, data.courseId);
+  .handler(async ({ data, context }) => {
+    const [course, segments, isBookmarked, isAdmin] = await Promise.all([
+      getCourseUseCase(data.courseId),
+      getSegmentsUseCase(data.courseId),
+      context.userId
+        ? isBookmarkedUseCase(context.userId, data.courseId)
+        : false,
+      context.userId
+        ? isCourseAdminUseCase(context.userId, data.courseId)
+        : false,
+    ]);
+    return { course, segments, isBookmarked, isAdmin, userId: context.userId };
   });
 
 export const Route = createFileRoute("/courses/$courseId/")({
   component: RouteComponent,
   loader: async ({ params }) => {
-    const course = await getCourseFn({
+    return loaderFn({
       data: { courseId: parseInt(params.courseId) },
     });
-    const segments = await getSegmentsFn({
-      data: { courseId: parseInt(params.courseId) },
-    });
-    return { course, segments };
   },
 });
 
 function RouteComponent() {
-  const { course, segments } = Route.useLoaderData();
-  const [isBookmarked, setIsBookmarked] = React.useState(false);
-  const [isAdmin, setIsAdmin] = React.useState(false);
+  const {
+    course,
+    segments,
+    isBookmarked: _isBookmarked,
+    isAdmin,
+    userId,
+  } = Route.useLoaderData();
 
-  React.useEffect(() => {
-    getIsBookmarkedFn({ data: { courseId: course.id } }).then(setIsBookmarked);
-    getIsAdminFn({ data: { courseId: course.id } }).then(setIsAdmin);
-  }, [course.id]);
+  const [isBookmarked, setIsBookmarked] = React.useState(_isBookmarked);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleBookmarkToggle = async () => {
     try {
@@ -118,26 +88,47 @@ function RouteComponent() {
     }
   };
 
+  const scrollToContent = () => {
+    contentRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <Container>
       {/* Course Header */}
       <Title
         title={course.title}
         actions={
-          <Button
-            variant={isBookmarked ? "secondary" : "outline"}
-            onClick={handleBookmarkToggle}
-            className="flex-shrink-0 transition-colors"
-            aria-pressed={isBookmarked}
-          >
-            <Bookmark
-              className={cn(
-                "h-5 w-5 mr-2 transition-all",
-                isBookmarked ? "fill-current" : "fill-none"
-              )}
-            />
-            {isBookmarked ? "Bookmarked" : "Bookmark"}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                to="/courses/$courseId/edit"
+                params={{ courseId: course.id.toString() }}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <Edit />
+                Edit Course
+              </Link>
+            )}
+
+            <Button onClick={scrollToContent} variant="default">
+              <Lightbulb /> Start Learning
+            </Button>
+
+            <Button
+              variant={isBookmarked ? "secondary" : "outline"}
+              onClick={handleBookmarkToggle}
+              className="flex-shrink-0 transition-colors"
+              aria-pressed={isBookmarked}
+            >
+              <Bookmark
+                className={cn(
+                  "h-5 w-5 mr-2 transition-all",
+                  isBookmarked ? "fill-current" : "fill-none"
+                )}
+              />
+              {isBookmarked ? "Bookmarked" : "Bookmark"}
+            </Button>
+          </div>
         }
       />
 
@@ -145,31 +136,22 @@ function RouteComponent() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Left Column - Course Info */}
         <div className="space-y-6">
-          <p className="text-xl text-muted-foreground">
-            Welcome to {course.title}! Get ready to embark on an exciting
-            learning journey.
-          </p>
-
           {/* Course Description */}
           <div className="prose max-w-none">
-            <h2 className="text-2xl font-semibold mb-4">About this Course</h2>
-            <p>
-              This comprehensive course will take you through everything you
-              need to know about {course.title}. Whether you're a beginner or
-              looking to refresh your knowledge, we've got you covered with
-              step-by-step lessons and practical exercises.
-            </p>
+            <ReactMarkdown>{course.description}</ReactMarkdown>
           </div>
         </div>
 
         {/* Right Column - Video */}
         <div className="w-full">
-          <VideoPlayer url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+          {course.videoKey && (
+            <VideoPlayer url={getStorageUrl(course.videoKey)} />
+          )}
         </div>
       </div>
 
       {/* Segments List */}
-      <div className="mt-8">
+      <div className="mt-8" ref={contentRef}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Course Content</h2>
           {isAdmin && (

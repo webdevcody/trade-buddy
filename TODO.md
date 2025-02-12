@@ -1,3 +1,7 @@
+# TODO NOW
+
+- add the ability for someone to upload a video for the course
+
 # High Priority
 
 ## Educators
@@ -9,6 +13,7 @@
   - a segment should be able to be deleted
 - an educator shall be able to unpublish a course
 - an educator shall be able to publish a course
+- an educator shall be able to upload a video for a segment
 - an educator shall be able to upload assignments associated with the video
 - an educator shall be able to add markdown under the video (for example, a transcript)
 - an educator shall be able to add a quiz to test if you learned from the video

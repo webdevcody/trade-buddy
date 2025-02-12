@@ -23,6 +23,7 @@ import { Route as CoursesAddImport } from './routes/courses/add'
 import { Route as DashboardExerciseIndexImport } from './routes/dashboard/exercise.index'
 import { Route as CoursesCourseIdIndexImport } from './routes/courses/$courseId/index'
 import { Route as DashboardExerciseAddImport } from './routes/dashboard/exercise.add'
+import { Route as CoursesCourseIdEditImport } from './routes/courses/$courseId/edit'
 import { Route as CoursesCourseIdSegmentsAddImport } from './routes/courses/$courseId/segments/add'
 import { Route as CoursesCourseIdSegmentsSegmentIdIndexImport } from './routes/courses/$courseId/segments/$segmentId/index'
 import { Route as CoursesCourseIdSegmentsSegmentIdEditImport } from './routes/courses/$courseId/segments/$segmentId/edit'
@@ -99,6 +100,12 @@ const DashboardExerciseAddRoute = DashboardExerciseAddImport.update({
   id: '/exercise/add',
   path: '/exercise/add',
   getParentRoute: () => DashboardRouteRoute,
+} as any)
+
+const CoursesCourseIdEditRoute = CoursesCourseIdEditImport.update({
+  id: '/courses/$courseId/edit',
+  path: '/courses/$courseId/edit',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const CoursesCourseIdSegmentsAddRoute = CoursesCourseIdSegmentsAddImport.update(
@@ -190,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexImport
       parentRoute: typeof DashboardRouteImport
     }
+    '/courses/$courseId/edit': {
+      id: '/courses/$courseId/edit'
+      path: '/courses/$courseId/edit'
+      fullPath: '/courses/$courseId/edit'
+      preLoaderRoute: typeof CoursesCourseIdEditImport
+      parentRoute: typeof rootRoute
+    }
     '/dashboard/exercise/add': {
       id: '/dashboard/exercise/add'
       path: '/exercise/add'
@@ -265,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/food': typeof DashboardFoodRoute
   '/courses': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
@@ -282,6 +297,7 @@ export interface FileRoutesByTo {
   '/dashboard/food': typeof DashboardFoodRoute
   '/courses': typeof CoursesIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise': typeof DashboardExerciseIndexRoute
@@ -301,6 +317,7 @@ export interface FileRoutesById {
   '/dashboard/food': typeof DashboardFoodRoute
   '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
   '/dashboard/exercise/add': typeof DashboardExerciseAddRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/dashboard/exercise/': typeof DashboardExerciseIndexRoute
@@ -321,6 +338,7 @@ export interface FileRouteTypes {
     | '/dashboard/food'
     | '/courses'
     | '/dashboard/'
+    | '/courses/$courseId/edit'
     | '/dashboard/exercise/add'
     | '/courses/$courseId'
     | '/dashboard/exercise'
@@ -337,6 +355,7 @@ export interface FileRouteTypes {
     | '/dashboard/food'
     | '/courses'
     | '/dashboard'
+    | '/courses/$courseId/edit'
     | '/dashboard/exercise/add'
     | '/courses/$courseId'
     | '/dashboard/exercise'
@@ -354,6 +373,7 @@ export interface FileRouteTypes {
     | '/dashboard/food'
     | '/courses/'
     | '/dashboard/'
+    | '/courses/$courseId/edit'
     | '/dashboard/exercise/add'
     | '/courses/$courseId/'
     | '/dashboard/exercise/'
@@ -371,6 +391,7 @@ export interface RootRouteChildren {
   UnauthenticatedRoute: typeof UnauthenticatedRoute
   CoursesAddRoute: typeof CoursesAddRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
+  CoursesCourseIdEditRoute: typeof CoursesCourseIdEditRoute
   CoursesCourseIdIndexRoute: typeof CoursesCourseIdIndexRoute
   CoursesCourseIdSegmentsAddRoute: typeof CoursesCourseIdSegmentsAddRoute
   CoursesCourseIdSegmentsSegmentIdEditRoute: typeof CoursesCourseIdSegmentsSegmentIdEditRoute
@@ -385,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnauthenticatedRoute: UnauthenticatedRoute,
   CoursesAddRoute: CoursesAddRoute,
   CoursesIndexRoute: CoursesIndexRoute,
+  CoursesCourseIdEditRoute: CoursesCourseIdEditRoute,
   CoursesCourseIdIndexRoute: CoursesCourseIdIndexRoute,
   CoursesCourseIdSegmentsAddRoute: CoursesCourseIdSegmentsAddRoute,
   CoursesCourseIdSegmentsSegmentIdEditRoute:
@@ -410,6 +432,7 @@ export const routeTree = rootRoute
         "/unauthenticated",
         "/courses/add",
         "/courses/",
+        "/courses/$courseId/edit",
         "/courses/$courseId/",
         "/courses/$courseId/segments/add",
         "/courses/$courseId/segments/$segmentId/edit",
@@ -450,6 +473,9 @@ export const routeTree = rootRoute
     "/dashboard/": {
       "filePath": "dashboard/index.tsx",
       "parent": "/dashboard"
+    },
+    "/courses/$courseId/edit": {
+      "filePath": "courses/$courseId/edit.tsx"
     },
     "/dashboard/exercise/add": {
       "filePath": "dashboard/exercise.add.tsx",
