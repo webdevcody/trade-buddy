@@ -5,11 +5,9 @@ import { SidebarProvider, useSidebar } from "~/components/ui/sidebar";
 import { getCourseUseCase, isCourseAdminUseCase } from "~/use-cases/courses";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Edit, Menu, Trash2 } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { getSegmentUseCase, deleteSegmentUseCase } from "~/use-cases/segments";
 import {
-  createAttachment,
-  deleteAttachment,
   getSegmentAttachments,
   getSegmentsByCourseId,
 } from "~/data-access/segments";
@@ -23,7 +21,6 @@ import { VideoPlayer } from "../../-components/video-player";
 import { getStorageUrl, uploadFile } from "~/utils/storage";
 import { useDropzone } from "react-dropzone";
 import { cn } from "~/utils/cn";
-import { toast } from "sonner";
 import { Toaster } from "~/components/ui/toaster";
 import { useToast } from "~/hooks/use-toast";
 import { useRouter } from "@tanstack/react-router";
@@ -188,8 +185,7 @@ function ViewSegment({
   const { toast } = useToast();
   const router = useRouter();
 
-  // Close mobile navigation when switching to desktop
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isMobile && openMobile) {
       setOpenMobile(false);
     }
@@ -402,13 +398,35 @@ function ViewSegment({
                         {attachment.fileName}
                       </a>
                       {isAdmin && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteAttachment(attachment.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant={"destructive"} size="icon">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you absolutely sure?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete this attachment.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  handleDeleteAttachment(attachment.id)
+                                }
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </div>
                   ))}
