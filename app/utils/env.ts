@@ -6,4 +6,5 @@ export const env = {
   STORAGE_BUCKET_NAME: process.env.STORAGE_BUCKET_NAME!,
   NODE_ENV: process.env.NODE_ENV!,
   VITE_FILE_URL: process.env.VITE_FILE_URL!,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
 };

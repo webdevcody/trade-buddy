@@ -22,7 +22,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { Label } from "~/components/ui/label";
 import { getPresignedPostUrlFn } from "~/fn/storage";
 import { useState, useEffect } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { analyzeChartsWithAIFn } from "~/fn/analysis";
+import { getStorageUrl } from "~/utils/storage";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { cn } from "~/lib/utils";
 
 interface TimeframeImage {
   file: File;
@@ -72,6 +82,13 @@ function RouteComponent() {
   const [timeframeImages, setTimeframeImages] = useState<
     Record<string, TimeframeImage>
   >({});
+  const [analysis, setAnalysis] = useState<{
+    recommendation: "LONG" | "SHORT" | "WAIT";
+    confidence: number;
+    analysis: string;
+    patterns: string[];
+  } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(createSnapshotSchema),
@@ -154,49 +171,117 @@ function RouteComponent() {
 
   async function onSubmit(formData: FormData) {
     try {
+      setIsAnalyzing(true);
       let finalData = { ...formData };
       const images: { timeframe: string; imageId: string }[] = [];
 
       // Upload all images and collect their IDs
       await Promise.all(
-        Object.entries(timeframeImages).map(async ([timeframe, { file }]) => {
-          const presignedData = await getPresignedPostUrlFn({
-            data: {
-              contentType: file.type,
-            },
-          });
+        Object.entries(timeframeImages).map(
+          async ([timeframe, { file, imageId }]) => {
+            // Use the existing presigned URL data since we already have it
+            const uploadFormData = new FormData();
+            const presignedData = await getPresignedPostUrlFn({
+              data: {
+                contentType: file.type,
+              },
+            });
 
-          // Upload the file using the presigned URL
-          const uploadFormData = new FormData();
-          Object.entries(presignedData.fields).forEach(([key, value]) => {
-            uploadFormData.append(key, value);
-          });
-          uploadFormData.append("file", file);
+            Object.entries(presignedData.fields).forEach(([key, value]) => {
+              uploadFormData.append(key, value);
+            });
+            uploadFormData.append("file", file);
 
-          await fetch(presignedData.url, {
-            method: "POST",
-            body: uploadFormData,
-          });
+            await fetch(presignedData.url, {
+              method: "POST",
+              body: uploadFormData,
+            });
 
-          images.push({
-            timeframe,
-            imageId: presignedData.key,
-          });
-        })
+            images.push({
+              timeframe,
+              imageId: presignedData.key,
+            });
+
+            // Update the timeframeImages with the new imageId
+            setTimeframeImages((prev) => ({
+              ...prev,
+              [timeframe]: {
+                ...prev[timeframe],
+                imageId: presignedData.key,
+              },
+            }));
+          }
+        )
       );
 
       finalData.images = images;
 
-      await createSnapshotFn({ data: finalData });
+      // Analyze the images with OpenAI using the updated image IDs
+      const aiAnalysis = await analyzeChartsWithAIFn({
+        data: {
+          symbol: formData.symbol,
+          images,
+        },
+      });
+
+      setAnalysis(aiAnalysis);
+
+      // Create the snapshot with the analysis
+      await createSnapshotFn({
+        data: {
+          ...finalData,
+          notes: finalData.notes
+            ? `${finalData.notes}\n\nAI Analysis:\n${aiAnalysis.analysis}`
+            : `AI Analysis:\n${aiAnalysis.analysis}`,
+        },
+      });
+
       navigate({ to: "/dashboard" });
     } catch (error) {
       console.error("Failed to create snapshot:", error);
+    } finally {
+      setIsAnalyzing(false);
     }
   }
 
   return (
     <div className="flex-grow p-8 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Create Chart Snapshot</h1>
+
+      {analysis && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle
+              className={cn(
+                "flex items-center gap-2",
+                analysis.recommendation === "LONG"
+                  ? "text-green-500"
+                  : analysis.recommendation === "SHORT"
+                    ? "text-red-500"
+                    : "text-yellow-500"
+              )}
+            >
+              {analysis.recommendation} ({analysis.confidence}% Confidence)
+            </CardTitle>
+            <CardDescription>AI Analysis Results</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="whitespace-pre-wrap">{analysis.analysis}</div>
+              {analysis.patterns.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-2">Detected Patterns:</h4>
+                  <ul className="list-disc pl-5">
+                    {analysis.patterns.map((pattern, index) => (
+                      <li key={index}>{pattern}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -309,7 +394,16 @@ function RouteComponent() {
             >
               Cancel
             </Button>
-            <Button type="submit">Create Snapshot</Button>
+            <Button type="submit" disabled={isAnalyzing}>
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                "Create Snapshot"
+              )}
+            </Button>
           </div>
         </form>
       </Form>

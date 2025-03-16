@@ -43,6 +43,7 @@
     "drizzle-orm": "^0.39.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.474.0",
+    "openai": "^4.87.3",
     "pg": "^8.13.1",
     "postgres": "^3.4.5",
     "react": "^19.0.0",

@@ -141,9 +141,6 @@ ${snapshot.screenshots.map((s) => `**${s.timeframe}**: Showing bullish momentum 
       <div className="flex justify-between items-center">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">{snapshot.symbol}</h1>
-          {snapshot.notes && (
-            <p className="text-muted-foreground">{snapshot.notes}</p>
-          )}
         </div>
 
         <AlertDialog>
@@ -182,7 +179,7 @@ ${snapshot.screenshots.map((s) => `**${s.timeframe}**: Showing bullish momentum 
 
         <TabsContent value="overview">
           <Card className="p-6">
-            <Markdown>{overviewAnalysis}</Markdown>
+            {snapshot.notes && <Markdown>{snapshot.notes}</Markdown>}
           </Card>
         </TabsContent>
 
