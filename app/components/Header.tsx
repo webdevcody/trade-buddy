@@ -4,7 +4,7 @@ import { createServerFn } from "@tanstack/start";
 import { getCurrentUser } from "~/utils/session";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./ModeToggle";
-import { Menu, LayoutGrid } from "lucide-react";
+import { Menu, LayoutGrid, Home, LayoutDashboard } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { useState } from "react";
 
@@ -37,30 +37,25 @@ export function Header() {
 
             <Link
               to="/"
+              className="flex items-center gap-2"
               activeProps={{
-                className: "font-bold",
+                className: "flex items-center gap-2 font-bold",
               }}
               activeOptions={{ exact: true }}
             >
+              <Home className="w-4 h-4" />
               Home
             </Link>
             <Link
               to="/dashboard"
+              className="flex items-center gap-2"
               activeProps={{
-                className: "font-bold",
+                className: "flex items-center gap-2 font-bold",
               }}
               activeOptions={{ exact: true }}
             >
+              <LayoutDashboard className="w-4 h-4" />
               Dashboard
-            </Link>
-            <Link
-              to="/courses"
-              activeProps={{
-                className: "font-bold",
-              }}
-              activeOptions={{ exact: true }}
-            >
-              Courses
             </Link>
           </div>
 

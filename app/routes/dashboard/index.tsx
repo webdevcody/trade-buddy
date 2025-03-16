@@ -1,42 +1,55 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { authenticatedMiddleware } from "~/lib/auth";
 import { Button } from "~/components/ui/button";
-import { ChevronRight, GraduationCap } from "lucide-react";
+import { ChartBar, Plus } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { assertAuthenticatedFn } from "~/fn/auth";
-import { getBookmarkedCoursesUseCase } from "~/use-cases/courses";
+import { getSnapshotsUseCase } from "~/use-cases/snapshots";
+import { Link } from "@tanstack/react-router";
+import { getStorageUrl } from "~/utils/storage";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 
-const getBookmarkedCoursesFn = createServerFn()
+const getSnapshotsFn = createServerFn()
   .middleware([authenticatedMiddleware])
   .handler(async ({ context }) => {
-    const enrolledCourses = await getBookmarkedCoursesUseCase(context.userId);
-    return enrolledCourses;
+    const snapshots = await getSnapshotsUseCase(context.userId);
+    return snapshots;
   });
 
 export const Route = createFileRoute("/dashboard/")({
   component: RouteComponent,
   beforeLoad: () => assertAuthenticatedFn(),
   loader: async () => {
-    const courses = await getBookmarkedCoursesFn();
-    return { courses };
+    const snapshots = await getSnapshotsFn();
+    return { snapshots };
   },
 });
 
 function RouteComponent() {
-  const { courses } = Route.useLoaderData();
+  const { snapshots } = Route.useLoaderData();
 
-  if (courses.length === 0) {
+  if (snapshots.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 p-8 text-center">
-        <GraduationCap className="h-16 w-16 text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-semibold mb-2">No Enrolled Courses</h2>
+        <ChartBar className="h-16 w-16 text-muted-foreground mb-4" />
+        <h2 className="text-2xl font-semibold mb-2">No Chart Snapshots</h2>
         <p className="text-muted-foreground mb-4">
-          You haven't enrolled in any courses yet. Start your learning journey
-          today!
+          You haven't created any chart snapshots yet. Start capturing your
+          trading analysis!
         </p>
-        <Link to="/courses">
-          <Button>Browse Courses</Button>
+        <Link to="/dashboard/charts/create">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Snapshot
+          </Button>
         </Link>
       </div>
     );
@@ -44,69 +57,52 @@ function RouteComponent() {
 
   return (
     <div className="flex-grow p-8">
-      <h1 className="text-2xl font-bold mb-6">Your Courses</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Your Chart Snapshots</h1>
+        <Link to="/dashboard/charts/create">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Snapshot
+          </Button>
+        </Link>
+      </div>
 
-      <div className="grid gap-6">
-        {courses.map((enrollment) => {
-          const completedCount = 0; // TODO: hard coded for now
-          const progress =
-            enrollment.totalSegments === 0
-              ? 100
-              : Math.round(
-                  (completedCount / enrollment.totalSegments ?? 1) * 100
-                );
-
-          return (
-            <Link
-              key={enrollment.courseId}
-              to="/courses/$courseId"
-              params={{ courseId: enrollment.courseId.toString() }}
-            >
-              <div
-                className={cn(
-                  "p-6 border rounded-lg hover:bg-accent transition-colors",
-                  "flex flex-col gap-4"
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold">
-                      {enrollment.course.title}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {enrollment.course.category}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${progress}%` }}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {snapshots.map((snapshot) => (
+          <Link
+            key={snapshot.id}
+            to="/dashboard/charts/$snapshotId"
+            params={{ snapshotId: snapshot.id.toString() }}
+          >
+            <Card className="hover:bg-accent transition-colors cursor-pointer">
+              <CardHeader>
+                <CardTitle>{snapshot.symbol}</CardTitle>
+                <CardDescription>
+                  Timeframe: {snapshot.timeframe}
+                </CardDescription>
+              </CardHeader>
+              {snapshot.screenshots[0] && (
+                <CardContent>
+                  <div className="aspect-video relative overflow-hidden rounded-md">
+                    <img
+                      src={getStorageUrl(snapshot.screenshots[0].fileKey)}
+                      alt={`Chart snapshot for ${snapshot.symbol}`}
+                      className="object-cover w-full h-full"
                     />
                   </div>
-                </div>
-
-                <div className="flex justify-between text-sm text-muted-foreground">
+                </CardContent>
+              )}
+              <CardFooter className="text-sm text-muted-foreground">
+                <div className="flex justify-between w-full">
+                  <span>{snapshot.screenshots.length} screenshots</span>
                   <span>
-                    {completedCount} of {enrollment.totalSegments} segments
-                    completed
-                  </span>
-                  <span>
-                    Enrolled on{" "}
-                    {new Date(enrollment.createdAt).toLocaleDateString()}
+                    Created {new Date(snapshot.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-              </div>
-            </Link>
-          );
-        })}
+              </CardFooter>
+            </Card>
+          </Link>
+        ))}
       </div>
     </div>
   );

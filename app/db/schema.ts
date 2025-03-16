@@ -64,87 +64,41 @@ export const sessions = tableCreator(
   })
 );
 
-export const exercises = tableCreator("exercise", {
+export const chartSnapshots = tableCreator("chart_snapshot", {
   id: serial("id").primaryKey(),
   userId: serial("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  exercise: text("exercise").notNull(),
-  weight: integer("weight").notNull(),
-  reps: integer("reps").notNull(),
-  sets: integer("sets").notNull(),
-});
-
-export const courses = tableCreator("course", {
-  id: serial("id").primaryKey(),
-  userId: serial("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  category: text("category").notNull(),
-  videoKey: text("videoKey"),
-});
-
-export const segments = tableCreator("segment", {
-  id: serial("id").primaryKey(),
-  courseId: serial("courseId")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  order: integer("order").notNull(),
-  videoKey: text("videoKey"),
+  symbol: text("symbol").notNull(),
+  timeframe: text("timeframe").notNull(), // e.g., '1m', '5m', '1h', '1d'
+  notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const attachments = tableCreator("attachment", {
+export const chartScreenshots = tableCreator("chart_screenshot", {
   id: serial("id").primaryKey(),
-  segmentId: serial("segmentId")
+  snapshotId: serial("snapshotId")
     .notNull()
-    .references(() => segments.id, { onDelete: "cascade" }),
-  fileName: text("fileName").notNull(),
+    .references(() => chartSnapshots.id, { onDelete: "cascade" }),
   fileKey: text("fileKey").notNull(),
+  timeframe: text("timeframe").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const coursesRelations = relations(courses, ({ many }) => ({
-  segments: many(segments),
-}));
+export const chartSnapshotsRelations = relations(
+  chartSnapshots,
+  ({ many }) => ({
+    screenshots: many(chartScreenshots),
+  })
+);
 
-export const segmentsRelations = relations(segments, ({ one, many }) => ({
-  course: one(courses, {
-    fields: [segments.courseId],
-    references: [courses.id],
-  }),
-  attachments: many(attachments),
-}));
-
-export const attachmentsRelations = relations(attachments, ({ one }) => ({
-  segment: one(segments, {
-    fields: [attachments.segmentId],
-    references: [segments.id],
-  }),
-}));
-
-export const courseBookmarks = tableCreator("bookmark", {
-  id: serial("id").primaryKey(),
-  userId: serial("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  courseId: serial("courseId")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const courseBookmarksRelations = relations(
-  courseBookmarks,
+export const chartScreenshotsRelations = relations(
+  chartScreenshots,
   ({ one }) => ({
-    course: one(courses, {
-      fields: [courseBookmarks.courseId],
-      references: [courses.id],
+    snapshot: one(chartSnapshots, {
+      fields: [chartScreenshots.snapshotId],
+      references: [chartSnapshots.id],
     }),
   })
 );
@@ -152,14 +106,7 @@ export const courseBookmarksRelations = relations(
 export type User = typeof users.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
-export type Exercise = typeof exercises.$inferSelect;
-export type ExerciseCreate = typeof exercises.$inferInsert;
-export type Course = typeof courses.$inferSelect;
-export type CourseCreate = typeof courses.$inferInsert;
-export type CourseUpdate = Partial<typeof courses.$inferInsert>;
-export type CourseBookmark = typeof courseBookmarks.$inferSelect;
-export type CourseBookmarkInsert = typeof courseBookmarks.$inferInsert;
-export type Segment = typeof segments.$inferSelect;
-export type SegmentCreate = typeof segments.$inferInsert;
-export type Attachment = typeof attachments.$inferSelect;
-export type AttachmentCreate = typeof attachments.$inferInsert;
+export type ChartSnapshot = typeof chartSnapshots.$inferSelect;
+export type ChartSnapshotCreate = typeof chartSnapshots.$inferInsert;
+export type ChartScreenshot = typeof chartScreenshots.$inferSelect;
+export type ChartScreenshotCreate = typeof chartScreenshots.$inferInsert;

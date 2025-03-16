@@ -33,9 +33,9 @@ function Home() {
         </p>
 
         {userInfo.data.user ? (
-          <Link to="/courses">
+          <Link to="/dashboard">
             <Button size="lg" className="text-lg px-8">
-              View Courses
+              View Dashboard
             </Button>
           </Link>
         ) : (

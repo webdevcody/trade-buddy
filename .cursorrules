@@ -1,0 +1,1 @@
+- all server actions should use a validator and zod schema

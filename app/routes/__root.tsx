@@ -94,7 +94,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="h-screen">
         <ThemeProvider>
           <Header />
-          <div className="h-[calc(100vh-64px)] mt-16">{children}</div>
+          <div className="h-[calc(100vh-64px)] mt-16 container mx-auto">
+            {children}
+          </div>
           <TanStackRouterDevtools position="bottom-right" />
           <ReactQueryDevtools buttonPosition="bottom-left" />
           <Scripts />
