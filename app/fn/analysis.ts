@@ -10,10 +10,10 @@ const openai = new OpenAI({
 });
 
 const analysisResponseSchema = z.object({
-  recommendation: z.enum(["LONG", "SHORT", "WAIT"]),
-  confidence: z.number().min(0).max(100),
   analysis: z.string(),
   patterns: z.array(z.string()),
+  recommendation: z.enum(["LONG", "SHORT", "WAIT"]),
+  confidence: z.number(),
 });
 
 export type AnalysisResponse = z.infer<typeof analysisResponseSchema>;
@@ -100,14 +100,6 @@ export const analyzeChartsWithAIFn = createServerFn()
 
       const analysis = response.choices[0].message.content || "";
 
-      // Extract recommendation and confidence from the analysis
-      let recommendation: "LONG" | "SHORT" | "WAIT" = "WAIT";
-      if (analysis.toUpperCase().includes("LONG")) {
-        recommendation = "LONG";
-      } else if (analysis.toUpperCase().includes("SHORT")) {
-        recommendation = "SHORT";
-      }
-
       // Extract patterns (looking for common pattern names)
       const patternKeywords = [
         "Head and Shoulders",
@@ -125,19 +117,27 @@ export const analyzeChartsWithAIFn = createServerFn()
         analysis.toLowerCase().includes(pattern.toLowerCase())
       );
 
-      // Estimate confidence based on language used
-      let confidence = 70;
-      if (analysis.toLowerCase().includes("strong")) confidence = 85;
-      if (analysis.toLowerCase().includes("very strong")) confidence = 95;
-      if (analysis.toLowerCase().includes("weak")) confidence = 55;
-      if (analysis.toLowerCase().includes("uncertain")) confidence = 40;
-      if (analysis.toLowerCase().includes("unclear")) confidence = 30;
+      // Extract recommendation and confidence from the analysis
+      let recommendation: "LONG" | "SHORT" | "WAIT" = "WAIT";
+      let confidence = 0;
+
+      if (analysis.toLowerCase().includes("long")) {
+        recommendation = "LONG";
+      } else if (analysis.toLowerCase().includes("short")) {
+        recommendation = "SHORT";
+      }
+
+      // Try to find a confidence percentage in the text
+      const confidenceMatch = analysis.match(/confidence[:\s]+(\d+)%?/i);
+      if (confidenceMatch) {
+        confidence = parseInt(confidenceMatch[1]);
+      }
 
       const result: AnalysisResponse = {
-        recommendation,
-        confidence,
         analysis,
         patterns,
+        recommendation,
+        confidence,
       };
 
       return analysisResponseSchema.parse(result);

@@ -27,7 +27,6 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { cn } from "~/lib/utils";
 
 const snapshotParamsSchema = z.object({
   snapshotId: z.string().transform((val) => parseInt(val)),
@@ -81,11 +80,7 @@ export const Route = createFileRoute("/dashboard/charts/$snapshotId")({
 });
 
 function AnalysisCard({ screenshot }: { screenshot: ChartScreenshot }) {
-  if (
-    !screenshot.analysis ||
-    !screenshot.recommendation ||
-    !screenshot.confidence
-  ) {
+  if (!screenshot.analysis) {
     return null;
   }
 
@@ -124,60 +119,6 @@ function RouteComponent() {
     });
     navigate({ to: "/dashboard" });
   };
-
-  const placeholderAnalysis = `
-## Technical Analysis
-
-The stock is showing a **bullish trend** with the following key points:
-
-- Strong support level at $XX.XX
-- Moving averages indicate upward momentum
-- Volume increasing on up days
-
-### Key Levels
-- Resistance: $XX.XX
-- Support: $XX.XX
-
-### Recommendation
-Consider watching for a breakout above resistance level.
-`;
-
-  const overviewAnalysis = `
-## Overall Market Analysis for ${snapshot.symbol}
-
-### Multi-Timeframe Analysis Summary
-
-${snapshot.screenshots.map((s) => `**${s.timeframe}**: Showing bullish momentum with key support at $XX.XX`).join("\n")}
-
-### Pattern Recognition
-- Double bottom formation on daily chart
-- Bullish engulfing on 4H timeframe
-- RSI showing oversold conditions on lower timeframes
-
-### Volume Analysis
-- Increasing volume on upward movements
-- Decreasing volume on pullbacks
-- Above average volume in recent sessions
-
-### Key Action Points
-1. Primary trend is **bullish** across multiple timeframes
-2. Major resistance levels:
-   - R1: $XX.XX
-   - R2: $XX.XX
-3. Major support levels:
-   - S1: $XX.XX
-   - S2: $XX.XX
-
-### Trading Opportunities
-- Look for pullbacks to support levels for potential entries
-- Consider breakout trades above major resistance
-- Keep stops below key support levels
-
-### Risk Management
-- Suggested stop loss: Below $XX.XX
-- Position sizing: 2% risk per trade
-- Multiple timeframe confirmation recommended
-`;
 
   return (
     <div className="container py-6 space-y-6">

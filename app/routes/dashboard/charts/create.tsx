@@ -140,18 +140,11 @@ function RouteComponent() {
     { value: "1d", label: "1 day" },
   ];
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { "image/*": [] },
-    onDrop: handleImageUpload,
-  });
-
-  const handleImageUpload = async (
-    timeframe: string,
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
+  const handleImageUpload = async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
     if (file) {
       try {
+        const timeframe = form.getValues("timeframe");
         // Clean up previous preview URL for this timeframe if it exists
         if (timeframeImages[timeframe]?.previewUrl) {
           URL.revokeObjectURL(timeframeImages[timeframe].previewUrl);
@@ -182,6 +175,12 @@ function RouteComponent() {
     }
     return null;
   };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { "image/*": [] },
+    onDrop: handleImageUpload,
+    maxFiles: 1,
+  });
 
   async function onSubmit(formData: FormData) {
     try {
@@ -229,7 +228,11 @@ function RouteComponent() {
             images.push({
               timeframe,
               imageId: presignedData.key,
-              analysis: timeframeAnalysis,
+              analysis: {
+                ...timeframeAnalysis,
+                recommendation: timeframeAnalysis.recommendation || "WAIT",
+                confidence: timeframeAnalysis.confidence || 0,
+              },
             });
           }
         )
@@ -247,7 +250,7 @@ function RouteComponent() {
       });
 
       // Create the snapshot with both individual and overall analysis
-      await createSnapshotFn({
+      const snapshot = await createSnapshotFn({
         data: {
           symbol: formData.symbol,
           timeframe: formData.timeframe,
@@ -258,7 +261,7 @@ function RouteComponent() {
         },
       });
 
-      navigate({ to: "/dashboard" });
+      navigate({ to: `/dashboard/charts/${snapshot!.id}` });
     } catch (error) {
       console.error("Failed to create snapshot:", error);
     } finally {
@@ -318,22 +321,48 @@ function RouteComponent() {
                     {timeframes.map((tf) => (
                       <TabsContent key={tf.value} value={tf.value}>
                         <div className="space-y-4">
-                          <div
-                            {...getRootProps()}
-                            className={cn(
-                              "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer",
-                              "hover:border-primary/50 transition-colors",
-                              isDragActive
-                                ? "border-primary bg-primary/5"
-                                : "border-muted"
-                            )}
-                          >
-                            <input {...getInputProps()} />
-                            <p>
-                              Drag & drop chart images here, or click to select
-                              files
-                            </p>
-                          </div>
+                          {timeframeImages[tf.value] ? (
+                            <div className="space-y-4">
+                              <img
+                                src={timeframeImages[tf.value].previewUrl}
+                                alt={`Preview for ${tf.value}`}
+                                className="max-w-full h-auto rounded-lg border"
+                              />
+                              <div
+                                {...getRootProps()}
+                                className={cn(
+                                  "border-2 border-dashed rounded-lg p-4 text-center cursor-pointer",
+                                  "hover:border-primary/50 transition-colors",
+                                  isDragActive
+                                    ? "border-primary bg-primary/5"
+                                    : "border-muted"
+                                )}
+                              >
+                                <input {...getInputProps()} />
+                                <p>
+                                  Drop a new image to replace, or click to
+                                  select
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              {...getRootProps()}
+                              className={cn(
+                                "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer",
+                                "hover:border-primary/50 transition-colors",
+                                isDragActive
+                                  ? "border-primary bg-primary/5"
+                                  : "border-muted"
+                              )}
+                            >
+                              <input {...getInputProps()} />
+                              <p>
+                                Drag & drop chart images here, or click to
+                                select files
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </TabsContent>
                     ))}

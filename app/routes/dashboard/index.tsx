@@ -19,7 +19,12 @@ import { Link } from "@tanstack/react-router";
 import { getStorageUrl } from "~/utils/storage";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Check, ChevronsUpDown } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 
 type LoaderData = {
   snapshots: {
@@ -54,57 +59,85 @@ export const Route = createFileRoute("/dashboard/")({
 
 function DashboardPage() {
   const { snapshots: allSnapshots } = Route.useLoaderData();
-  const [symbolFilter, setSymbolFilter] = useState("");
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
 
-  // Get unique symbols from snapshots
-  const uniqueSymbols = Array.from(
+  // Transform unique symbols into the format expected by the combobox
+  const symbols = Array.from(
     new Set(
       allSnapshots.map(
         (snapshot: SnapshotData) => snapshot.chart_snapshot.symbol
       )
     )
-  );
+  ).map((symbol) => ({
+    value: symbol.toLowerCase(),
+    label: symbol,
+  }));
 
   // Filter snapshots based on selected symbol
-  const filteredSnapshots = symbolFilter
-    ? allSnapshots.filter((snapshot: SnapshotData) =>
-        snapshot.chart_snapshot.symbol
-          .toLowerCase()
-          .includes(symbolFilter.toLowerCase())
+  const filteredSnapshots = value
+    ? allSnapshots.filter(
+        (snapshot: SnapshotData) =>
+          snapshot.chart_snapshot.symbol.toLowerCase() === value
       )
     : allSnapshots;
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <Command className="rounded-lg border shadow-md flex-1 mr-4">
-          <CommandInput
-            placeholder="Search symbols..."
-            value={symbolFilter}
-            onValueChange={setSymbolFilter}
-          />
-          <CommandList>
-            <CommandEmpty>No symbols found.</CommandEmpty>
-            <CommandGroup heading="Symbols">
-              {(uniqueSymbols as string[]).map((symbol) => (
-                <CommandItem
-                  key={symbol}
-                  value={symbol}
-                  onSelect={setSymbolFilter}
-                >
-                  {symbol}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-
+        <h1 className="text-3xl font-bold">Stock History</h1>
         <Link to="/dashboard/charts/create">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
             Create Snapshot
           </Button>
         </Link>
+      </div>
+
+      <div className="mb-8">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-[300px] justify-between"
+            >
+              {value
+                ? symbols.find((symbol) => symbol.value === value)?.label
+                : "Select symbol..."}
+              <ChevronsUpDown className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-0">
+            <Command>
+              <CommandInput placeholder="Search framework..." />
+              <CommandList>
+                <CommandEmpty>No framework found.</CommandEmpty>
+                <CommandGroup>
+                  {symbols.map((symbol) => (
+                    <CommandItem
+                      key={symbol.value}
+                      value={symbol.value}
+                      onSelect={(currentValue) => {
+                        setValue(currentValue === value ? "" : currentValue);
+                        setOpen(false);
+                      }}
+                    >
+                      {symbol.label}
+                      <Check
+                        className={cn(
+                          "ml-auto",
+                          value === symbol.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
