@@ -33,11 +33,18 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
+import { useDropzone } from "react-dropzone";
 
 interface TimeframeImage {
   file: File;
   previewUrl: string;
   imageId: string;
+  analysis?: {
+    recommendation: "LONG" | "SHORT" | "WAIT";
+    confidence: number;
+    analysis: string;
+    patterns: string[];
+  };
 }
 
 const createSnapshotSchema = z.object({
@@ -49,6 +56,14 @@ const createSnapshotSchema = z.object({
       z.object({
         timeframe: z.string(),
         imageId: z.string(),
+        analysis: z
+          .object({
+            recommendation: z.enum(["LONG", "SHORT", "WAIT"]),
+            confidence: z.number(),
+            analysis: z.string(),
+            patterns: z.array(z.string()),
+          })
+          .optional(),
       })
     )
     .min(1, "At least one image is required"),
@@ -82,12 +97,6 @@ function RouteComponent() {
   const [timeframeImages, setTimeframeImages] = useState<
     Record<string, TimeframeImage>
   >({});
-  const [analysis, setAnalysis] = useState<{
-    recommendation: "LONG" | "SHORT" | "WAIT";
-    confidence: number;
-    analysis: string;
-    patterns: string[];
-  } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const form = useForm<FormData>({
@@ -131,6 +140,11 @@ function RouteComponent() {
     { value: "1d", label: "1 day" },
   ];
 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { "image/*": [] },
+    onDrop: handleImageUpload,
+  });
+
   const handleImageUpload = async (
     timeframe: string,
     event: React.ChangeEvent<HTMLInputElement>
@@ -172,21 +186,28 @@ function RouteComponent() {
   async function onSubmit(formData: FormData) {
     try {
       setIsAnalyzing(true);
-      let finalData = { ...formData };
-      const images: { timeframe: string; imageId: string }[] = [];
+      const images: {
+        timeframe: string;
+        imageId: string;
+        analysis?: {
+          recommendation: "LONG" | "SHORT" | "WAIT";
+          confidence: number;
+          analysis: string;
+          patterns: string[];
+        };
+      }[] = [];
 
       // Upload all images and collect their IDs
       await Promise.all(
         Object.entries(timeframeImages).map(
           async ([timeframe, { file, imageId }]) => {
-            // Use the existing presigned URL data since we already have it
-            const uploadFormData = new FormData();
             const presignedData = await getPresignedPostUrlFn({
               data: {
                 contentType: file.type,
               },
             });
 
+            const uploadFormData = new FormData();
             Object.entries(presignedData.fields).forEach(([key, value]) => {
               uploadFormData.append(key, value);
             });
@@ -197,42 +218,43 @@ function RouteComponent() {
               body: uploadFormData,
             });
 
+            // Analyze each timeframe individually
+            const timeframeAnalysis = await analyzeChartsWithAIFn({
+              data: {
+                symbol: formData.symbol,
+                images: [{ timeframe, imageId: presignedData.key }],
+              },
+            });
+
             images.push({
               timeframe,
               imageId: presignedData.key,
+              analysis: timeframeAnalysis,
             });
-
-            // Update the timeframeImages with the new imageId
-            setTimeframeImages((prev) => ({
-              ...prev,
-              [timeframe]: {
-                ...prev[timeframe],
-                imageId: presignedData.key,
-              },
-            }));
           }
         )
       );
 
-      finalData.images = images;
-
-      // Analyze the images with OpenAI using the updated image IDs
-      const aiAnalysis = await analyzeChartsWithAIFn({
+      // Analyze all images together for the overview
+      const overallAnalysis = await analyzeChartsWithAIFn({
         data: {
           symbol: formData.symbol,
-          images,
+          images: images.map(({ timeframe, imageId }) => ({
+            timeframe,
+            imageId,
+          })),
         },
       });
 
-      setAnalysis(aiAnalysis);
-
-      // Create the snapshot with the analysis
+      // Create the snapshot with both individual and overall analysis
       await createSnapshotFn({
         data: {
-          ...finalData,
-          notes: finalData.notes
-            ? `${finalData.notes}\n\nAI Analysis:\n${aiAnalysis.analysis}`
-            : `AI Analysis:\n${aiAnalysis.analysis}`,
+          symbol: formData.symbol,
+          timeframe: formData.timeframe,
+          notes: formData.notes
+            ? `${formData.notes}\n\nOverall AI Analysis:\n${overallAnalysis.analysis}`
+            : `Overall AI Analysis:\n${overallAnalysis.analysis}`,
+          images: images,
         },
       });
 
@@ -247,41 +269,6 @@ function RouteComponent() {
   return (
     <div className="flex-grow p-8 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Create Chart Snapshot</h1>
-
-      {analysis && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle
-              className={cn(
-                "flex items-center gap-2",
-                analysis.recommendation === "LONG"
-                  ? "text-green-500"
-                  : analysis.recommendation === "SHORT"
-                    ? "text-red-500"
-                    : "text-yellow-500"
-              )}
-            >
-              {analysis.recommendation} ({analysis.confidence}% Confidence)
-            </CardTitle>
-            <CardDescription>AI Analysis Results</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="whitespace-pre-wrap">{analysis.analysis}</div>
-              {analysis.patterns.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2">Detected Patterns:</h4>
-                  <ul className="list-disc pl-5">
-                    {analysis.patterns.map((pattern, index) => (
-                      <li key={index}>{pattern}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -331,26 +318,21 @@ function RouteComponent() {
                     {timeframes.map((tf) => (
                       <TabsContent key={tf.value} value={tf.value}>
                         <div className="space-y-4">
-                          <div className="border rounded-lg p-4">
-                            <Label htmlFor={`image-${tf.value}`}>
-                              Upload Chart Image
-                            </Label>
-                            <Input
-                              id={`image-${tf.value}`}
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => handleImageUpload(tf.value, e)}
-                              className="mt-2"
-                            />
-                            {timeframeImages[tf.value]?.previewUrl && (
-                              <div className="mt-4">
-                                <img
-                                  src={timeframeImages[tf.value].previewUrl}
-                                  alt={`Chart preview for ${tf.label}`}
-                                  className="max-w-full h-auto rounded-lg border"
-                                />
-                              </div>
+                          <div
+                            {...getRootProps()}
+                            className={cn(
+                              "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer",
+                              "hover:border-primary/50 transition-colors",
+                              isDragActive
+                                ? "border-primary bg-primary/5"
+                                : "border-muted"
                             )}
+                          >
+                            <input {...getInputProps()} />
+                            <p>
+                              Drag & drop chart images here, or click to select
+                              files
+                            </p>
                           </div>
                         </div>
                       </TabsContent>

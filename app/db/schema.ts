@@ -84,6 +84,10 @@ export const chartScreenshots = tableCreator("chart_screenshot", {
   fileKey: text("fileKey").notNull(),
   timeframe: text("timeframe").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  analysis: text("analysis"),
+  recommendation: text("recommendation"),
+  confidence: integer("confidence"),
+  patterns: text("patterns").array(),
 });
 
 export const chartSnapshotsRelations = relations(

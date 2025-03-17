@@ -1,64 +1,104 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { database as db } from "~/db";
+import { desc, eq } from "drizzle-orm";
+import { chartSnapshots, chartScreenshots } from "~/db/schema";
+import { format } from "date-fns";
+import { useState } from "react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "~/components/ui/command";
+import type { ChartSnapshot, ChartScreenshot } from "~/db/schema";
 import { createServerFn } from "@tanstack/start";
 import { authenticatedMiddleware } from "~/lib/auth";
-import { Button } from "~/components/ui/button";
-import { ChartBar, Plus } from "lucide-react";
-import { cn } from "~/lib/utils";
-import { assertAuthenticatedFn } from "~/fn/auth";
-import { getSnapshotsUseCase } from "~/use-cases/snapshots";
 import { Link } from "@tanstack/react-router";
 import { getStorageUrl } from "~/utils/storage";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { cn } from "~/lib/utils";
+import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
+
+type LoaderData = {
+  snapshots: {
+    chart_snapshot: ChartSnapshot;
+    chart_screenshot: ChartScreenshot | null;
+  }[];
+};
+
+type SnapshotData = LoaderData["snapshots"][0];
 
 const getSnapshotsFn = createServerFn()
   .middleware([authenticatedMiddleware])
-  .handler(async ({ context }) => {
-    const snapshots = await getSnapshotsUseCase(context.userId);
-    return snapshots;
+  .handler(async () => {
+    const data = await db
+      .select()
+      .from(chartSnapshots)
+      .leftJoin(
+        chartScreenshots,
+        eq(chartSnapshots.id, chartScreenshots.snapshotId)
+      )
+      .orderBy(desc(chartSnapshots.createdAt));
+    return data;
   });
 
 export const Route = createFileRoute("/dashboard/")({
-  component: RouteComponent,
-  beforeLoad: () => assertAuthenticatedFn(),
   loader: async () => {
-    const snapshots = await getSnapshotsFn();
-    return { snapshots };
+    const data = await getSnapshotsFn();
+    return { snapshots: data } as LoaderData;
   },
+  component: DashboardPage,
 });
 
-function RouteComponent() {
-  const { snapshots } = Route.useLoaderData();
+function DashboardPage() {
+  const { snapshots: allSnapshots } = Route.useLoaderData();
+  const [symbolFilter, setSymbolFilter] = useState("");
 
-  if (snapshots.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center flex-1 p-8 text-center">
-        <ChartBar className="h-16 w-16 text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-semibold mb-2">No Chart Snapshots</h2>
-        <p className="text-muted-foreground mb-4">
-          You haven't created any chart snapshots yet. Start capturing your
-          trading analysis!
-        </p>
-        <Link to="/dashboard/charts/create">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Snapshot
-          </Button>
-        </Link>
-      </div>
-    );
-  }
+  // Get unique symbols from snapshots
+  const uniqueSymbols = Array.from(
+    new Set(
+      allSnapshots.map(
+        (snapshot: SnapshotData) => snapshot.chart_snapshot.symbol
+      )
+    )
+  );
+
+  // Filter snapshots based on selected symbol
+  const filteredSnapshots = symbolFilter
+    ? allSnapshots.filter((snapshot: SnapshotData) =>
+        snapshot.chart_snapshot.symbol
+          .toLowerCase()
+          .includes(symbolFilter.toLowerCase())
+      )
+    : allSnapshots;
 
   return (
-    <div className="flex-grow p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Your Chart Snapshots</h1>
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <Command className="rounded-lg border shadow-md flex-1 mr-4">
+          <CommandInput
+            placeholder="Search symbols..."
+            value={symbolFilter}
+            onValueChange={setSymbolFilter}
+          />
+          <CommandList>
+            <CommandEmpty>No symbols found.</CommandEmpty>
+            <CommandGroup heading="Symbols">
+              {(uniqueSymbols as string[]).map((symbol) => (
+                <CommandItem
+                  key={symbol}
+                  value={symbol}
+                  onSelect={setSymbolFilter}
+                >
+                  {symbol}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+
         <Link to="/dashboard/charts/create">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
@@ -67,40 +107,53 @@ function RouteComponent() {
         </Link>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {snapshots.map((snapshot) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredSnapshots.map((snapshot: SnapshotData) => (
           <Link
-            key={snapshot.id}
+            key={snapshot.chart_snapshot.id}
             to="/dashboard/charts/$snapshotId"
-            params={{ snapshotId: snapshot.id.toString() }}
+            params={{ snapshotId: snapshot.chart_snapshot.id.toString() }}
+            className={cn(
+              "block border rounded-lg p-4 transition-colors",
+              "hover:bg-accent hover:text-accent-foreground",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              "active:translate-y-0.5"
+            )}
           >
-            <Card className="hover:bg-accent transition-colors cursor-pointer">
-              <CardHeader>
-                <CardTitle>{snapshot.symbol}</CardTitle>
-                <CardDescription>
-                  Timeframe: {snapshot.timeframe}
-                </CardDescription>
-              </CardHeader>
-              {snapshot.screenshots[0] && (
-                <CardContent>
-                  <div className="aspect-video relative overflow-hidden rounded-md">
-                    <img
-                      src={getStorageUrl(snapshot.screenshots[0].fileKey)}
-                      alt={`Chart snapshot for ${snapshot.symbol}`}
-                      className="object-cover w-full h-full"
-                    />
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">
+                {snapshot.chart_snapshot.symbol}
+              </h3>
+              <span className="text-sm text-gray-500">
+                {format(
+                  new Date(snapshot.chart_snapshot.createdAt),
+                  "MMM d, yyyy h:mm a"
+                )}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {snapshot.chart_screenshot && (
+                <div className="space-y-2">
+                  <img
+                    src={getStorageUrl(snapshot.chart_screenshot.fileKey)}
+                    alt={`Chart for ${snapshot.chart_snapshot.symbol}`}
+                    className="w-full h-auto rounded"
+                  />
+                  <div className="text-sm text-gray-600">
+                    {snapshot.chart_screenshot.timeframe}
                   </div>
-                </CardContent>
-              )}
-              <CardFooter className="text-sm text-muted-foreground">
-                <div className="flex justify-between w-full">
-                  <span>{snapshot.screenshots.length} screenshots</span>
-                  <span>
-                    Created {new Date(snapshot.createdAt).toLocaleDateString()}
-                  </span>
+                  {snapshot.chart_screenshot.analysis && (
+                    <div className="text-sm">
+                      <div className="font-medium">Analysis:</div>
+                      <div>{snapshot.chart_screenshot.recommendation}</div>
+                      <div className="text-gray-500">
+                        Confidence: {snapshot.chart_screenshot.confidence}%
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </CardFooter>
-            </Card>
+              )}
+            </div>
           </Link>
         ))}
       </div>

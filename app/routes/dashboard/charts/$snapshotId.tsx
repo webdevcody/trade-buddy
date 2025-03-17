@@ -27,6 +27,7 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { cn } from "~/lib/utils";
 
 const snapshotParamsSchema = z.object({
   snapshotId: z.string().transform((val) => parseInt(val)),
@@ -60,6 +61,14 @@ const getSnapshotFn = createServerFn()
     return snapshot;
   });
 
+const TIMEFRAME_ORDER = ["1m", "5m", "15m", "30m", "1h", "4h"] as const;
+type Timeframe = (typeof TIMEFRAME_ORDER)[number];
+
+function getTimeframeOrder(timeframe: string): number {
+  const index = TIMEFRAME_ORDER.indexOf(timeframe as Timeframe);
+  return index === -1 ? Infinity : index;
+}
+
 export const Route = createFileRoute("/dashboard/charts/$snapshotId")({
   component: RouteComponent,
   beforeLoad: () => assertAuthenticatedFn(),
@@ -71,9 +80,43 @@ export const Route = createFileRoute("/dashboard/charts/$snapshotId")({
   },
 });
 
+function AnalysisCard({ screenshot }: { screenshot: ChartScreenshot }) {
+  if (
+    !screenshot.analysis ||
+    !screenshot.recommendation ||
+    !screenshot.confidence
+  ) {
+    return null;
+  }
+
+  return (
+    <Card className="p-6">
+      <div className="space-y-4">
+        <Markdown>{screenshot.analysis}</Markdown>
+
+        {screenshot.patterns && screenshot.patterns.length > 0 && (
+          <div>
+            <h4 className="font-semibold mb-2">Detected Patterns:</h4>
+            <ul className="list-disc pl-5">
+              {screenshot.patterns.map((pattern, index) => (
+                <li key={index}>{pattern}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 function RouteComponent() {
   const { snapshot } = Route.useLoaderData();
   const navigate = useNavigate();
+
+  // Sort screenshots by timeframe order
+  const sortedScreenshots = [...snapshot.screenshots].sort(
+    (a, b) => getTimeframeOrder(a.timeframe) - getTimeframeOrder(b.timeframe)
+  );
 
   const handleDelete = async () => {
     await deleteSnapshotFn({
@@ -170,11 +213,17 @@ ${snapshot.screenshots.map((s) => `**${s.timeframe}**: Showing bullish momentum 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          {snapshot.screenshots.map((screenshot: ChartScreenshot) => (
-            <TabsTrigger key={screenshot.id} value={screenshot.timeframe}>
-              {screenshot.timeframe}
-            </TabsTrigger>
-          ))}
+          {TIMEFRAME_ORDER.map((timeframe) => {
+            const screenshot = sortedScreenshots.find(
+              (s) => s.timeframe === timeframe
+            );
+            if (!screenshot) return null;
+            return (
+              <TabsTrigger key={timeframe} value={timeframe}>
+                {timeframe}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <TabsContent value="overview">
@@ -183,24 +232,28 @@ ${snapshot.screenshots.map((s) => `**${s.timeframe}**: Showing bullish momentum 
           </Card>
         </TabsContent>
 
-        {snapshot.screenshots.map((screenshot: ChartScreenshot) => (
-          <TabsContent key={screenshot.id} value={screenshot.timeframe}>
-            <div className="grid grid-cols-2 gap-6">
-              <Card className="p-4">
-                <div className="aspect-video relative overflow-hidden rounded-md">
-                  <img
-                    src={getStorageUrl(screenshot.fileKey)}
-                    alt={`Chart snapshot for ${snapshot.symbol}`}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              </Card>
-              <Card className="p-6">
-                <Markdown>{placeholderAnalysis}</Markdown>
-              </Card>
-            </div>
-          </TabsContent>
-        ))}
+        {TIMEFRAME_ORDER.map((timeframe) => {
+          const screenshot = sortedScreenshots.find(
+            (s) => s.timeframe === timeframe
+          );
+          if (!screenshot) return null;
+          return (
+            <TabsContent key={timeframe} value={timeframe}>
+              <div className="grid grid-cols-2 gap-6">
+                <Card className="p-4">
+                  <div className="aspect-video relative overflow-hidden rounded-md">
+                    <img
+                      src={getStorageUrl(screenshot.fileKey)}
+                      alt={`Chart snapshot for ${snapshot.symbol}`}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </Card>
+                <AnalysisCard screenshot={screenshot} />
+              </div>
+            </TabsContent>
+          );
+        })}
       </Tabs>
     </div>
   );

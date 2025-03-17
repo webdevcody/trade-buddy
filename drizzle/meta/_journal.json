@@ -8,6 +8,13 @@
       "when": 1742092249660,
       "tag": "0000_daily_hellion",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1742142090906,
+      "tag": "0001_nice_sleeper",
+      "breakpoints": true
     }
   ]
 }

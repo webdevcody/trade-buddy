@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { database } from "~/db";
 import {
   chartSnapshots,
@@ -12,21 +12,33 @@ export async function getSnapshotsByUserId(userId: number) {
     with: {
       screenshots: true,
     },
-    orderBy: (snapshots) => snapshots.createdAt,
+    orderBy: (snapshots) => desc(snapshots.createdAt),
   });
 }
 
 export async function createSnapshot(
   snapshot: ChartSnapshotCreate & {
-    images?: { timeframe: string; imageId: string }[];
+    images?: {
+      timeframe: string;
+      imageId: string;
+      analysis?: {
+        recommendation: "LONG" | "SHORT" | "WAIT";
+        confidence: number;
+        analysis: string;
+        patterns: string[];
+      };
+    }[];
   }
 ) {
-  const { images, ...snapshotData } = snapshot;
+  const { images, timeframe, ...snapshotData } = snapshot;
 
   // Create the snapshot first
   const [created] = await database
     .insert(chartSnapshots)
-    .values(snapshotData)
+    .values({
+      ...snapshotData,
+      timeframe: timeframe || images?.[0]?.timeframe || "1m", // Use first image timeframe as fallback
+    })
     .returning();
 
   // If we have images, create the screenshot entries
@@ -36,6 +48,10 @@ export async function createSnapshot(
         snapshotId: created.id,
         fileKey: image.imageId,
         timeframe: image.timeframe,
+        analysis: image.analysis?.analysis,
+        recommendation: image.analysis?.recommendation,
+        confidence: image.analysis?.confidence,
+        patterns: image.analysis?.patterns,
       }))
     );
   }
