@@ -90,10 +90,16 @@ const createSnapshotFn = createServerFn()
 export const Route = createFileRoute("/dashboard/charts/create")({
   component: RouteComponent,
   beforeLoad: () => assertAuthenticatedFn(),
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      symbol: search.symbol as string | undefined,
+    };
+  },
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const { symbol } = Route.useSearch();
   const [timeframeImages, setTimeframeImages] = useState<
     Record<string, TimeframeImage>
   >({});
@@ -102,12 +108,19 @@ function RouteComponent() {
   const form = useForm<FormData>({
     resolver: zodResolver(createSnapshotSchema),
     defaultValues: {
-      symbol: "",
+      symbol: symbol || "",
       timeframe: "1m",
       notes: "",
       images: [],
     },
   });
+
+  // Update form when search params change
+  useEffect(() => {
+    if (symbol) {
+      form.setValue("symbol", symbol);
+    }
+  }, [symbol, form]);
 
   // Update form images field when timeframeImages changes
   useEffect(() => {

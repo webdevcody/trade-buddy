@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { assertAuthenticatedFn } from "~/fn/auth";
 import { createServerFn } from "@tanstack/start";
 import { authenticatedMiddleware } from "~/lib/auth";
@@ -26,7 +26,8 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
+import { useState } from "react";
 
 const snapshotParamsSchema = z.object({
   snapshotId: z.string().transform((val) => parseInt(val)),
@@ -107,6 +108,9 @@ function AnalysisCard({ screenshot }: { screenshot: ChartScreenshot }) {
 function RouteComponent() {
   const { snapshot } = Route.useLoaderData();
   const navigate = useNavigate();
+  const [selectedView, setSelectedView] = useState<"chart" | "analysis">(
+    "chart"
+  );
 
   // Sort screenshots by timeframe order
   const sortedScreenshots = [...snapshot.screenshots].sort(
@@ -127,32 +131,46 @@ function RouteComponent() {
           <h1 className="text-3xl font-bold">{snapshot.symbol}</h1>
         </div>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="icon">
-              <Trash2 className="h-4 w-4" />
+        <div className="flex gap-2">
+          <Link
+            to="/dashboard/charts/create"
+            search={{ symbol: snapshot.symbol }}
+            className="inline-flex items-center gap-2"
+          >
+            <Button variant="outline" size="sm">
+              <Plus className="h-4 w-4" />
+              New Snapshot
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the
-                snapshot for {snapshot.symbol} and all associated chart images.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          </Link>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="icon">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  snapshot for {snapshot.symbol} and all associated chart
+                  images.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="overview" orientation="vertical" className="flex">
+        <TabsList className="flex flex-col h-[calc(100vh-200px)] sticky top-6 w-48 space-y-2">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           {TIMEFRAME_ORDER.map((timeframe) => {
             const screenshot = sortedScreenshots.find(
@@ -167,34 +185,54 @@ function RouteComponent() {
           })}
         </TabsList>
 
-        <TabsContent value="overview">
-          <Card className="p-6">
-            {snapshot.notes && <Markdown>{snapshot.notes}</Markdown>}
-          </Card>
-        </TabsContent>
+        <div className="flex-1 pl-6">
+          <TabsContent value="overview">
+            <Card className="p-6">
+              {snapshot.notes && <Markdown>{snapshot.notes}</Markdown>}
+            </Card>
+          </TabsContent>
 
-        {TIMEFRAME_ORDER.map((timeframe) => {
-          const screenshot = sortedScreenshots.find(
-            (s) => s.timeframe === timeframe
-          );
-          if (!screenshot) return null;
-          return (
-            <TabsContent key={timeframe} value={timeframe}>
-              <div className="grid grid-cols-2 gap-6">
-                <Card className="p-4">
-                  <div className="aspect-video relative overflow-hidden rounded-md">
-                    <img
-                      src={getStorageUrl(screenshot.fileKey)}
-                      alt={`Chart snapshot for ${snapshot.symbol}`}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                </Card>
-                <AnalysisCard screenshot={screenshot} />
-              </div>
-            </TabsContent>
-          );
-        })}
+          {TIMEFRAME_ORDER.map((timeframe) => {
+            const screenshot = sortedScreenshots.find(
+              (s) => s.timeframe === timeframe
+            );
+            if (!screenshot) return null;
+            return (
+              <TabsContent key={timeframe} value={timeframe}>
+                <div className="space-y-6">
+                  <Tabs
+                    value={selectedView}
+                    onValueChange={(value) =>
+                      setSelectedView(value as "chart" | "analysis")
+                    }
+                    className="w-full"
+                  >
+                    <TabsList>
+                      <TabsTrigger value="chart">Chart</TabsTrigger>
+                      <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="chart">
+                      <Card className="p-4">
+                        <div className="aspect-video relative overflow-hidden rounded-md">
+                          <img
+                            src={getStorageUrl(screenshot.fileKey)}
+                            alt={`Chart snapshot for ${snapshot.symbol}`}
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+                      </Card>
+                    </TabsContent>
+
+                    <TabsContent value="analysis">
+                      <AnalysisCard screenshot={screenshot} />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </TabsContent>
+            );
+          })}
+        </div>
       </Tabs>
     </div>
   );

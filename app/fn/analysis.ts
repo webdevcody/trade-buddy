@@ -20,12 +20,12 @@ export type AnalysisResponse = z.infer<typeof analysisResponseSchema>;
 
 const systemPrompt = `You are an expert technical analyst reviewing trading chart images. Analyze the provided chart images together to determine market trends, patterns, and trading opportunities. Focus on:
 
-1. Overall trend direction and strength
-2. Key reversal patterns
-3. Support and resistance levels
-4. Trading recommendation (LONG, SHORT, or WAIT)
+1. General recommendation (LONG, SHORT, or WAIT)
+2. Overall trend direction and strength
+3. Key reversal patterns
+4. Support and resistance levels
 
-Provide a structured analysis with a clear recommendation and confidence level.`;
+Provide a structured analysis with a clear recommendation and confidence level.  Make the first paragraph the general recommendation.`;
 
 const analysisInputSchema = z.object({
   symbol: z.string(),
